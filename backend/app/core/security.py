@@ -1,0 +1,57 @@
+from datetime import datetime, timedelta
+from typing import Optional, Dict
+from jose import jwt, JWTError
+from passlib.context import CryptContext
+from app.core.config import settings
+
+# Password hashing
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+# Failed login tracker in-memory for RN-001 (or persistent in DB)
+# Structure: { email: {"failed_count": int, "locked_until": datetime | None} }
+failed_login_tracker: Dict[str, Dict] = {}
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    return pwd_context.verify(plain_password, hashed_password)
+
+def get_password_hash(password: str) -> str:
+    return pwd_context.hash(password)
+
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+    return encoded_jwt
+
+def check_login_lockout(email: str) -> bool:
+    """Returns True if the account is locked out due to RN-001 (3 failed attempts -> 15 min lock)."""
+    record = failed_login_tracker.get(email)
+    if not record:
+        return False
+    locked_until = record.get("locked_until")
+    if locked_until:
+        if datetime.utcnow() < locked_until:
+            return True
+        else:
+            # Lock expired, reset
+            failed_login_tracker[email] = {"failed_count": 0, "locked_until": None}
+            return False
+    return False
+
+def record_failed_login(email: str) -> int:
+    """Increments failed attempt count and sets lockout if reached 3 attempts (RN-001)."""
+    record = failed_login_tracker.get(email, {"failed_count": 0, "locked_until": None})
+    count = record["failed_count"] + 1
+    locked_until = None
+    if count >= settings.MAX_FAILED_LOGIN_ATTEMPTS:
+        locked_until = datetime.utcnow() + timedelta(minutes=settings.LOCKOUT_DURATION_MINUTES)
+    failed_login_tracker[email] = {"failed_count": count, "locked_until": locked_until}
+    return count
+
+def clear_failed_logins(email: str):
+    if email in failed_login_tracker:
+        del failed_login_tracker[email]
