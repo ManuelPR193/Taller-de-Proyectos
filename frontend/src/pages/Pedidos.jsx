@@ -67,8 +67,9 @@ export const Pedidos = () => {
     setError(null);
     try {
       const todayStr = new Date().toISOString().split('T')[0];
-      const inicioDt = `${todayStr}T${form.ventana_inicio}:00Z`;
-      const finDt = `${todayStr}T${form.ventana_fin}:00Z`;
+      const inicioDt = `${todayStr}T${form.ventana_inicio}:00`;
+      const finDt = `${todayStr}T${form.ventana_fin}:00`;
+
 
       await api.createOrder({
         cliente_id: form.cliente_id,

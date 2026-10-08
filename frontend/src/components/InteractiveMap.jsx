@@ -32,7 +32,23 @@ const expressIcon = new L.Icon({
 
 const routeColors = ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899'];
 
+const createStopPin = (num, color) => {
+  return L.divIcon({
+    className: 'custom-stop-pin',
+    html: `<div style="background-color: ${color}; color: #ffffff; font-weight: 800; font-size: 11px; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid #ffffff; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.5);">${num}</div>`,
+    iconSize: [24, 24],
+    iconAnchor: [12, 12],
+    popupAnchor: [0, -12]
+  });
+};
+
 export const InteractiveMap = ({ routes = [], orders = [], depot = { lat: -12.0656, lng: -75.2048 } }) => {
+  // Collect order IDs that are already in route details to avoid duplicate plain markers
+  const assignedOrderIds = new Set();
+  routes.forEach(r => {
+    (r.detalles || []).forEach(d => assignedOrderIds.add(d.pedido_id));
+  });
+
   return (
     <div className="w-full h-[500px] rounded-xl overflow-hidden border border-slate-800 shadow-2xl relative">
       <MapContainer
@@ -58,8 +74,8 @@ export const InteractiveMap = ({ routes = [], orders = [], depot = { lat: -12.06
           </Popup>
         </Marker>
 
-        {/* Order Markers */}
-        {orders.map((ord) => {
+        {/* Unassigned Order Markers */}
+        {orders.filter(ord => !assignedOrderIds.has(ord.pedido_id)).map((ord) => {
           const isExpress = ord.prioridad === 'EXPRESS';
           return (
             <Marker
@@ -77,7 +93,7 @@ export const InteractiveMap = ({ routes = [], orders = [], depot = { lat: -12.06
                   </div>
                   <p className="text-xs text-slate-600 mt-1">{ord.punto_referencia || 'Sin referencia'}</p>
                   <div className="text-[11px] mt-1 text-slate-500">
-                    Peso: <b>{ord.peso_kg} kg</b> | Estado: <b className="text-emerald-700">{ord.estado}</b>
+                    Peso: <b>{ord.peso_kg} kg</b> | Estado: <b className="text-amber-700">{ord.estado}</b>
                   </div>
                 </div>
               </Popup>
@@ -85,7 +101,7 @@ export const InteractiveMap = ({ routes = [], orders = [], depot = { lat: -12.06
           );
         })}
 
-        {/* Route Polylines (RF-004) */}
+        {/* Route Polylines and Stop Markers (RF-004) */}
         {routes.map((route, idx) => {
           if (!route.detalles || route.detalles.length === 0) return null;
           const points = [
@@ -96,11 +112,36 @@ export const InteractiveMap = ({ routes = [], orders = [], depot = { lat: -12.06
           const pathColor = routeColors[idx % routeColors.length];
 
           return (
-            <Polyline
-              key={route.ruta_id || idx}
-              positions={points}
-              pathOptions={{ color: pathColor, weight: 4, opacity: 0.8, dashArray: '6, 6' }}
-            />
+            <React.Fragment key={route.ruta_id || idx}>
+              <Polyline
+                positions={points}
+                pathOptions={{ color: pathColor, weight: 5, opacity: 0.85, dashArray: '8, 8' }}
+              />
+              {route.detalles.map((det) => (
+                <Marker
+                  key={det.ruta_detalle_id}
+                  position={[det.latitud, det.longitud]}
+                  icon={createStopPin(det.orden_visita, pathColor)}
+                >
+                  <Popup>
+                    <div className="text-slate-900 font-sans p-1">
+                      <div className="flex items-center gap-2">
+                        <span className="w-5 h-5 rounded-full text-white text-[11px] font-bold flex items-center justify-center" style={{ backgroundColor: pathColor }}>
+                          {det.orden_visita}
+                        </span>
+                        <strong className="text-sm font-semibold">{det.pedido?.cliente?.nombre_negocio || 'Cliente'}</strong>
+                      </div>
+                      <div className="text-xs text-slate-600 mt-1">
+                        Vehículo: <b>{route.vehiculo?.placa}</b> ({route.conductor?.nombre || 'Conductor'})
+                      </div>
+                      <div className="text-[11px] mt-1 text-emerald-700 font-semibold">
+                        Est: {det.hora_estimada ? new Date(det.hora_estimada).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--'}
+                      </div>
+                    </div>
+                  </Popup>
+                </Marker>
+              ))}
+            </React.Fragment>
           );
         })}
       </MapContainer>
@@ -124,3 +165,4 @@ export const InteractiveMap = ({ routes = [], orders = [], depot = { lat: -12.06
     </div>
   );
 };
+

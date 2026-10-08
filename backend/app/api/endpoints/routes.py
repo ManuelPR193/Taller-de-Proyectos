@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List, Optional
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from app.db.session import get_db
 from app.models.domain import Ruta, RutaDetalle, Pedido, Vehiculo, Conductor
 from app.schemas.schemas import RutaOut, RouteGenerationRequest, DeliveryConfirmationRequest, ExpressOrderInsertRequest
-from app.services.vrptw_solver import VRPTWSolver
+from app.services.vrptw_solver import VRPTWSolver, haversine_distance
 
 router = APIRouter()
 
@@ -29,6 +29,21 @@ def generate_routes(payload: RouteGenerationRequest, db: Session = Depends(get_d
 
     # Get pending orders (RF-003)
     pending_orders = db.query(Pedido).filter(Pedido.estado == "PENDIENTE").all()
+    
+    # If no pending orders exist, check if there are PLANIFICADA routes that can be re-optimized
+    if not pending_orders:
+        planned_routes = db.query(Ruta).filter(Ruta.estado == "PLANIFICADA").all()
+        if planned_routes:
+            for r in planned_routes:
+                for d in r.detalles:
+                    p = db.query(Pedido).filter(Pedido.pedido_id == d.pedido_id).first()
+                    if p and p.estado == "ASIGNADO":
+                        p.estado = "PENDIENTE"
+                        p.motivo_no_asignado = None
+                db.delete(r)
+            db.flush()
+            pending_orders = db.query(Pedido).filter(Pedido.estado == "PENDIENTE").all()
+
     if not pending_orders:
         raise HTTPException(status_code=400, detail="No existen pedidos pendientes de ruteo.")
 
@@ -127,6 +142,16 @@ def confirm_delivery(payload: DeliveryConfirmationRequest, db: Session = Depends
     if order:
         order.estado = "ENTREGADO"
 
+    # Check if all orders in route are delivered
+    route = detail.ruta
+    if route:
+        all_delivered = all(
+            d.hora_real_entrega is not None or (d.pedido and d.pedido.estado == "ENTREGADO")
+            for d in route.detalles
+        )
+        if all_delivered:
+            route.estado = "COMPLETADA"
+
     db.commit()
     return {"message": "Entrega confirmada exitosamente (RN-010).", "hora_entrega": detail.hora_real_entrega}
 
@@ -155,7 +180,40 @@ def insert_express_order(payload: ExpressOrderInsertRequest, db: Session = Depen
     res = solver.insert_express_order({"id": order.pedido_id, "lat": order.latitud, "lng": order.longitud}, routes_payload)
     if res["success"]:
         order.estado = "ASIGNADO"
+        order.motivo_no_asignado = None
+        target_route = db.query(Ruta).filter(Ruta.ruta_id == res["route_id"]).first()
+        if target_route:
+            insert_pos = res["insert_position"]
+            for d in target_route.detalles:
+                if d.orden_visita >= insert_pos:
+                    d.orden_visita += 1
+
+            new_detail = RutaDetalle(
+                ruta_id=target_route.ruta_id,
+                pedido_id=order.pedido_id,
+                orden_visita=insert_pos,
+                hora_estimada=datetime.now() + timedelta(minutes=30),
+                latitud=order.latitud,
+                longitud=order.longitud
+            )
+            db.add(new_detail)
+            db.flush()
+
+            # Recalculate route metrics
+            veh = target_route.vehiculo
+            depot_lat, depot_lng = solver.depot_lat, solver.depot_lng
+            all_stops = db.query(RutaDetalle).filter(RutaDetalle.ruta_id == target_route.ruta_id).order_by(RutaDetalle.orden_visita).all()
+            
+            pts = [(depot_lat, depot_lng)] + [(s.latitud, s.longitud) for s in all_stops] + [(depot_lat, depot_lng)]
+            tot_km = sum(haversine_distance(pts[k][0], pts[k][1], pts[k+1][0], pts[k+1][1]) for k in range(len(pts)-1))
+            
+            target_route.distancia_total_km = round(tot_km, 2)
+            if veh:
+                target_route.co2_total_kg = round(tot_km * veh.factor_emision_co2, 2)
+                target_route.combustible_estimado_l = round(tot_km / veh.consumo_km_l, 2) if veh.consumo_km_l > 0 else 0.0
+
         db.commit()
         return {"message": f"Pedido Express insertado exitosamente en la ruta {res['route_id']} (RN-004).", "detalles": res}
     else:
         raise HTTPException(status_code=400, detail=res["message"])
+

@@ -22,6 +22,7 @@ class VRPTWSolver:
     Implements business rules:
     - RN-002: Vehicles >15 years old deprioritized (increased routing cost factor).
     - RN-003: Max 8 hours driving/day per driver.
+    - RN-005: Time Windows compliance.
     - RN-006: Vehicle weight capacity constraint.
     - RN-007: Unpaved/High-risk road penalties.
     - RN-008: CO2 emissions calculation per route based on vehicle factor.
@@ -66,9 +67,9 @@ class VRPTWSolver:
                         locations[j]["lat"], locations[j]["lng"]
                     )
                     # Apply RN-007 penalty for high risk/unpaved road zones (e.g. Chilca alta / Cochas)
-                    # Simple heuristic: if location is in Chilca alta area (lat < -12.08)
-                    if locations[j]["lat"] < -12.08:
-                        dist_km *= 1.15
+                    # Chilca alta: lat < -12.08 | Cochas: lat > -12.04 and lng > -75.20
+                    if locations[j]["lat"] < -12.08 or (locations[j]["lat"] > -12.04 and locations[j]["lng"] > -75.20):
+                        dist_km *= 1.25
                     row.append(int(dist_km * 1000)) # meters
             distance_matrix.append(row)
 
@@ -88,7 +89,7 @@ class VRPTWSolver:
         # Distance cost callback
         def distance_callback(from_index, to_index):
             from_node = manager.IndexToNode(from_index)
-            to_node = manager.IndexToNode(to_index)
+            to_node = manager.IndexToNode(to_node)
             return data["distance_matrix"][from_node][to_node]
 
         transit_callback_index = routing.RegisterTransitCallback(distance_callback)
@@ -99,8 +100,8 @@ class VRPTWSolver:
         for vehicle_idx, veh in enumerate(vehicles[:num_vehicles]):
             age = current_year - veh.get("anio", current_year)
             if age > 15:
-                # Add extra cost multiplier to discourage choosing old vehicle unless required
-                routing.SetFixedCostOfVehicle(50000, vehicle_idx)
+                # Add extra fixed cost multiplier to discourage choosing old vehicle unless required
+                routing.SetFixedCostOfVehicle(500000, vehicle_idx)
 
         # Capacity dimension (RN-006)
         def demand_callback(from_index):
@@ -108,7 +109,7 @@ class VRPTWSolver:
             return data["demands"][from_node]
 
         demand_callback_index = routing.RegisterUnaryTransitCallback(demand_callback)
-        routing.AddDimensionWithCapacity(
+        routing.AddDimensionWithVehicleCapacity(
             demand_callback_index,
             0,  # null capacity slack
             data["vehicle_capacities"], # vehicle capacities
@@ -120,7 +121,7 @@ class VRPTWSolver:
         speed_m_per_sec = 7.0
         def time_callback(from_index, to_index):
             from_node = manager.IndexToNode(from_index)
-            to_node = manager.IndexToNode(to_index)
+            to_node = manager.IndexToNode(to_node)
             dist_m = data["distance_matrix"][from_node][to_node]
             travel_time_sec = dist_m / speed_m_per_sec
             service_time_sec = 300 if to_node != 0 else 0 # 5 min service time per delivery
@@ -135,6 +136,51 @@ class VRPTWSolver:
             False,
             "Time"
         )
+        time_dimension = routing.GetDimensionOrDie("Time")
+
+        # Define base datetime for today at 8:00 AM
+        today_date = datetime.now().date()
+        base_time = datetime.combine(today_date, time(hour=8, minute=0, second=0))
+
+        # Apply Time Windows constraints (RN-005 / VRPTW)
+        for i, order in enumerate(orders, start=1):
+            index = manager.NodeToIndex(i)
+            inicio = order.get("inicio")
+            fin = order.get("fin")
+
+            if inicio and fin and isinstance(inicio, datetime) and isinstance(fin, datetime):
+                start_sec = max(0, int((inicio - base_time).total_seconds()))
+                end_sec = int((fin - base_time).total_seconds())
+                end_sec = max(start_sec + 600, min(max_work_sec, end_sec))
+            else:
+                start_sec = 0
+                end_sec = max_work_sec
+
+            time_dimension.CumulVar(index).SetRange(start_sec, end_sec)
+
+        # Set Depot time window
+        depot_index = manager.NodeToIndex(0)
+        time_dimension.CumulVar(depot_index).SetRange(0, max_work_sec)
+
+        # Set Driver daily limit constraints (RN-003) per vehicle
+        for vehicle_id in range(num_vehicles):
+            drv_info = drivers[vehicle_id]
+            already_driven_hrs = drv_info.get("horas_conducidas", 0.0)
+            remaining_secs = max(3600, int((settings.MAX_DRIVER_HOURS_PER_DAY - already_driven_hrs) * 3600))
+            routing.End(vehicle_id)
+            time_dimension.CumulVar(routing.End(vehicle_id)).SetRange(0, remaining_secs)
+
+        # Allow unassigned orders with penalty scaled by priority (Disjunctions)
+        for i, order in enumerate(orders, start=1):
+            index = manager.NodeToIndex(i)
+            prio = order.get("prioridad", "ESTANDAR")
+            if prio == "EXPRESS":
+                penalty = 10000000
+            elif prio == "ESTANDAR":
+                penalty = 2000000
+            else:
+                penalty = 500000
+            routing.AddDisjunction([index], penalty)
 
         # Search parameters
         search_parameters = pywrapcp.DefaultRoutingSearchParameters()
@@ -152,13 +198,12 @@ class VRPTWSolver:
         assigned_orders = set()
 
         if solution:
-            time_dimension = routing.GetDimensionOrDie("Time")
             for vehicle_id in range(num_vehicles):
                 index = routing.Start(vehicle_id)
                 route_stops = []
-                route_dist_m = 0
                 veh_info = vehicles[vehicle_id]
                 drv_info = drivers[vehicle_id]
+                route_nodes = []
 
                 while not routing.IsEnd(index):
                     node = manager.IndexToNode(index)
@@ -166,21 +211,31 @@ class VRPTWSolver:
                     if node != 0:
                         order = order_map[node]
                         assigned_orders.add(order["id"])
-                        est_minutes = solution.Min(time_var) // 60
-                        est_time = datetime.now().replace(hour=8, minute=0, second=0) + timedelta(minutes=est_minutes)
+                        est_seconds = solution.Min(time_var)
+                        est_time = base_time + timedelta(seconds=est_seconds)
                         route_stops.append({
                             "pedido_id": order["id"],
                             "lat": order["lat"],
                             "lng": order["lng"],
                             "hora_estimada": est_time
                         })
-                    
-                    previous_index = index
+                    route_nodes.append(node)
                     index = solution.Value(routing.NextVar(index))
-                    route_dist_m += routing.GetArcCostForVehicle(previous_index, index, vehicle_id)
+                
+                # Add depot end node to route
+                route_nodes.append(0)
 
                 if route_stops:
-                    dist_km = round(route_dist_m / 1000.0, 2)
+                    # Compute actual Haversine path distance in km
+                    route_dist_km = 0.0
+                    for k in range(len(route_nodes) - 1):
+                        n1, n2 = route_nodes[k], route_nodes[k+1]
+                        route_dist_km += haversine_distance(
+                            locations[n1]["lat"], locations[n1]["lng"],
+                            locations[n2]["lat"], locations[n2]["lng"]
+                        )
+                    
+                    dist_km = round(route_dist_km, 2)
                     co2_kg = round(dist_km * veh_info["factor_emision_co2"], 2) # RN-008
                     fuel_l = round(dist_km / veh_info["consumo_km_l"], 2) if veh_info["consumo_km_l"] > 0 else 0.0
 
@@ -198,7 +253,7 @@ class VRPTWSolver:
         return {
             "routes": result_routes,
             "unassigned_orders": unassigned,
-            "reason": "Capacidad insuficiente" if unassigned else None
+            "reason": "Capacidad o ventana de tiempo insuficiente" if unassigned else None
         }
 
     def insert_express_order(
@@ -234,5 +289,6 @@ class VRPTWSolver:
                 "hora_estimada": datetime.now() + timedelta(minutes=30)
             })
             return {"success": True, "route_id": target_route.get("ruta_id"), "insert_position": best_insert_pos}
-
         return {"success": False, "message": "No se pudo insertar la orden exprés"}
+
+

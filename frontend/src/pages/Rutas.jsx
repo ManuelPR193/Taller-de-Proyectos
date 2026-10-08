@@ -195,9 +195,17 @@ export const Rutas = () => {
                     <span className="text-slate-400">Conductor:</span>
                     <span className="font-semibold text-white">{route.conductor?.nombre || 'No asignado'} ({route.conductor?.categoria_licencia})</span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex justify-between items-center">
                     <span className="text-slate-400">Vehículo:</span>
-                    <span className="font-semibold text-white">{route.vehiculo?.tipo} (Cap: {route.vehiculo?.capacidad_kg} kg)</span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-white">{route.vehiculo?.tipo} (Cap: {route.vehiculo?.capacidad_kg} kg)</span>
+                      {route.vehiculo?.es_alto_emisor && (
+                        <span className="text-[10px] bg-red-500/20 text-red-300 border border-red-500/40 px-2 py-0.5 rounded-full font-extrabold flex items-center gap-1" title="RN-002: Vehículo > 15 años depriorizado">
+                          <AlertTriangle className="w-3 h-3 text-red-400" />
+                          RN-002 Alto Emisor
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -228,6 +236,29 @@ export const Rutas = () => {
         )}
       </div>
 
+      {/* Unassigned Orders Section (RF-003 Ruta Feliz) */}
+      {orders.some(o => o.estado === 'PENDIENTE' && o.motivo_no_asignado) && (
+        <div className="glass-panel p-5 border-amber-500/30 space-y-3">
+          <h4 className="text-sm font-bold text-amber-300 flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 text-amber-400" /> Pedidos No Asignados por Restricciones (RF-003)
+          </h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {orders.filter(o => o.estado === 'PENDIENTE' && o.motivo_no_asignado).map(ord => (
+              <div key={ord.pedido_id} className="bg-slate-900/70 p-3 rounded-xl border border-slate-800 flex justify-between items-center text-xs">
+                <div>
+                  <div className="font-semibold text-slate-200">{ord.cliente?.nombre_negocio || 'Pedido'}</div>
+                  <div className="text-[11px] text-slate-400">Peso: {ord.peso_kg} kg | Prioridad: {ord.prioridad}</div>
+                </div>
+                <span className="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-1 rounded font-mono border border-amber-500/30">
+                  {ord.motivo_no_asignado}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
+
