@@ -37,9 +37,9 @@ class UsuarioOut(BaseModel):
 class VehiculoCreate(BaseModel):
     placa: str
     tipo: str # CAMIONETA, FURGON, MOTO
-    capacidad_kg: float
-    consumo_km_l: float
-    factor_emision_co2: float
+    capacidad_kg: float = Field(gt=0, allow_inf_nan=False)
+    consumo_km_l: float = Field(gt=0, allow_inf_nan=False)
+    factor_emision_co2: float = Field(ge=0, allow_inf_nan=False)
     anio_fabricacion: int
 
 class VehiculoOut(VehiculoCreate):
@@ -74,8 +74,8 @@ class ClienteCreate(BaseModel):
     distrito: str
     contacto: Optional[str] = None
     direccion_referencia: Optional[str] = None
-    latitud: float
-    longitud: float
+    latitud: float = Field(ge=-90, le=90, allow_inf_nan=False)
+    longitud: float = Field(ge=-180, le=180, allow_inf_nan=False)
 
 class ClienteOut(ClienteCreate):
     cliente_id: str
@@ -87,11 +87,11 @@ class ClienteOut(ClienteCreate):
 # Order Schemas (RF-002)
 class PedidoCreate(BaseModel):
     cliente_id: str
-    latitud: float
-    longitud: float
+    latitud: float = Field(ge=-90, le=90, allow_inf_nan=False)
+    longitud: float = Field(ge=-180, le=180, allow_inf_nan=False)
     punto_referencia: Optional[str] = None
-    peso_kg: float
-    volumen_m3: float
+    peso_kg: float = Field(gt=0, allow_inf_nan=False)
+    volumen_m3: float = Field(ge=0, allow_inf_nan=False)
     prioridad: str = "ESTANDAR" # EXPRESS, ESTANDAR, ECONOMICO
     tipo_producto: str = "NO_PERECEDERO"
     ventana_inicio: datetime
@@ -114,8 +114,8 @@ class RutaDetalleOut(BaseModel):
     orden_visita: int
     hora_estimada: Optional[datetime] = None
     hora_real_entrega: Optional[datetime] = None
-    latitud: float
-    longitud: float
+    latitud: float = Field(ge=-90, le=90, allow_inf_nan=False)
+    longitud: float = Field(ge=-180, le=180, allow_inf_nan=False)
     pedido: Optional[PedidoOut] = None
 
     class Config:
@@ -144,8 +144,8 @@ class RouteGenerationRequest(BaseModel):
 # Delivery Confirmation Request (RN-010)
 class DeliveryConfirmationRequest(BaseModel):
     ruta_detalle_id: str
-    latitud: float
-    longitud: float
+    latitud: float = Field(ge=-90, le=90, allow_inf_nan=False)
+    longitud: float = Field(ge=-180, le=180, allow_inf_nan=False)
 
 # Express Re-optimization Request (RN-004, RF-007)
 class ExpressOrderInsertRequest(BaseModel):

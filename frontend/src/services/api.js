@@ -9,7 +9,7 @@ export const api = {
   login: async (email, password) => {
     const res = await fetch(`${API_BASE_URL}/auth/login`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...(localStorage.getItem("token") ? { Authorization: `Bearer ${localStorage.getItem("token")}` } : {}) },
       body: JSON.stringify({ email, password })
     });
     const data = await res.json();
@@ -19,7 +19,7 @@ export const api = {
   register: async (email, password, rol, nombre_completo) => {
     const res = await fetch(`${API_BASE_URL}/auth/register`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...(localStorage.getItem("token") ? { Authorization: `Bearer ${localStorage.getItem("token")}` } : {}) },
       body: JSON.stringify({ email, password, rol, nombre_completo })
     });
     const data = await res.json();
@@ -35,7 +35,7 @@ export const api = {
   createVehicle: async (vehData) => {
     const res = await fetch(`${API_BASE_URL}/vehicles/`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...(localStorage.getItem("token") ? { Authorization: `Bearer ${localStorage.getItem("token")}` } : {}) },
       body: JSON.stringify(vehData)
     });
     const data = await res.json();
@@ -51,7 +51,7 @@ export const api = {
   createDriver: async (drvData) => {
     const res = await fetch(`${API_BASE_URL}/drivers/`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...(localStorage.getItem("token") ? { Authorization: `Bearer ${localStorage.getItem("token")}` } : {}) },
       body: JSON.stringify(drvData)
     });
     const data = await res.json();
@@ -67,7 +67,7 @@ export const api = {
   createClient: async (cliData) => {
     const res = await fetch(`${API_BASE_URL}/clients/`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...(localStorage.getItem("token") ? { Authorization: `Bearer ${localStorage.getItem("token")}` } : {}) },
       body: JSON.stringify(cliData)
     });
     const data = await res.json();
@@ -83,7 +83,7 @@ export const api = {
   createOrder: async (ordData) => {
     const res = await fetch(`${API_BASE_URL}/orders/`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...(localStorage.getItem("token") ? { Authorization: `Bearer ${localStorage.getItem("token")}` } : {}) },
       body: JSON.stringify(ordData)
     });
     const data = await res.json();
@@ -99,7 +99,7 @@ export const api = {
   generateRoutes: async () => {
     const res = await fetch(`${API_BASE_URL}/routes/generate`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...(localStorage.getItem("token") ? { Authorization: `Bearer ${localStorage.getItem("token")}` } : {}) },
       body: JSON.stringify({})
     });
     const data = await res.json();
@@ -109,7 +109,7 @@ export const api = {
   confirmDelivery: async (ruta_detalle_id, latitud, longitud) => {
     const res = await fetch(`${API_BASE_URL}/routes/deliver-confirm`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...(localStorage.getItem("token") ? { Authorization: `Bearer ${localStorage.getItem("token")}` } : {}) },
       body: JSON.stringify({ ruta_detalle_id, latitud, longitud })
     });
     const data = await res.json();
@@ -119,7 +119,7 @@ export const api = {
   insertExpressOrder: async (pedido_id) => {
     const res = await fetch(`${API_BASE_URL}/routes/reoptimize-express`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...(localStorage.getItem("token") ? { Authorization: `Bearer ${localStorage.getItem("token")}` } : {}) },
       body: JSON.stringify({ pedido_id })
     });
     const data = await res.json();

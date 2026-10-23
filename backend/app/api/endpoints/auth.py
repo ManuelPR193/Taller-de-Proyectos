@@ -32,6 +32,9 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)):
             detail=f"Credenciales inválidas. Intentos fallidos: {attempts}/3 (RN-001)."
         )
 
+    if user.estado != "ACTIVO":
+        raise HTTPException(403, "Usuario inactivo")
+
     # Success login -> clear failed attempts counter
     clear_failed_logins(email)
     
@@ -47,6 +50,9 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)):
 
 @router.post("/register", response_model=UsuarioOut)
 def register(user_in: UsuarioCreate, db: Session = Depends(get_db)):
+    if user_in.rol.upper() != "CLIENTE":
+        raise HTTPException(403, "El registro publico solo permite cuentas de cliente")
+    user_in.email = user_in.email.strip().lower()
     existing = db.query(Usuario).filter(Usuario.email == user_in.email).first()
     if existing:
         raise HTTPException(status_code=400, detail="El email ya está registrado")

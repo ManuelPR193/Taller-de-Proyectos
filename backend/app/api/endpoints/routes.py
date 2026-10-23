@@ -6,6 +6,7 @@ from app.db.session import get_db
 from app.models.domain import Ruta, RutaDetalle, Pedido, Vehiculo, Conductor
 from app.schemas.schemas import RutaOut, RouteGenerationRequest, DeliveryConfirmationRequest, ExpressOrderInsertRequest
 from app.services.vrptw_solver import VRPTWSolver, haversine_distance
+from app.services.road_network import get_road_network
 
 router = APIRouter()
 
@@ -32,7 +33,7 @@ def generate_routes(payload: RouteGenerationRequest, db: Session = Depends(get_d
     
     # If no pending orders exist, check if there are PLANIFICADA routes that can be re-optimized
     if not pending_orders:
-        planned_routes = db.query(Ruta).filter(Ruta.estado == "PLANIFICADA").all()
+        planned_routes = db.query(Ruta).filter(Ruta.estado == "PLANIFICADA", Ruta.fecha == target_date).all()
         if planned_routes:
             for r in planned_routes:
                 for d in r.detalles:
@@ -50,6 +51,9 @@ def generate_routes(payload: RouteGenerationRequest, db: Session = Depends(get_d
     # Get available vehicles & drivers
     vehicles = db.query(Vehiculo).filter(Vehiculo.estado == "DISPONIBLE").all()
     drivers = db.query(Conductor).filter(Conductor.estado == "DISPONIBLE").all()
+    busy = db.query(Ruta).filter(Ruta.fecha == target_date, Ruta.estado.in_(["PLANIFICADA", "EN_PROGRESO"])).all()
+    vehicles = [v for v in vehicles if v.vehiculo_id not in {r.vehiculo_id for r in busy}]
+    drivers = [d for d in drivers if d.conductor_id not in {r.conductor_id for r in busy}]
 
     # RF-003 Infeliz: No vehicles available
     if not vehicles or not drivers:
@@ -82,7 +86,7 @@ def generate_routes(payload: RouteGenerationRequest, db: Session = Depends(get_d
     } for p in pending_orders]
 
     solver = VRPTWSolver()
-    solution = solver.solve(solver_vehicles, solver_drivers, solver_orders)
+    solution = solver.solve(solver_vehicles, solver_drivers, solver_orders, target_date=target_date)
 
     created_routes = []
     
@@ -137,6 +141,8 @@ def confirm_delivery(payload: DeliveryConfirmationRequest, db: Session = Depends
     if not detail:
         raise HTTPException(status_code=404, detail="Detalle de ruta no encontrado.")
 
+    if detail.hora_real_entrega is not None:
+        return {"message": "Entrega ya confirmada", "hora_entrega": detail.hora_real_entrega}
     detail.hora_real_entrega = datetime.now()
     order = db.query(Pedido).filter(Pedido.pedido_id == detail.pedido_id).first()
     if order:
@@ -162,6 +168,9 @@ def insert_express_order(payload: ExpressOrderInsertRequest, db: Session = Depen
     if not order:
         raise HTTPException(status_code=404, detail="Pedido no encontrado.")
 
+    if order.estado != "PENDIENTE" or order.detalles_ruta:
+        raise HTTPException(409, "El pedido ya fue asignado o no esta pendiente")
+
     if order.prioridad != "EXPRESS":
         order.prioridad = "EXPRESS"
 
@@ -172,6 +181,9 @@ def insert_express_order(payload: ExpressOrderInsertRequest, db: Session = Depen
     solver = VRPTWSolver()
     routes_payload = []
     for r in active_routes:
+        remaining_weight = sum(d.pedido.peso_kg for d in r.detalles if d.pedido and not d.hora_real_entrega)
+        if not r.vehiculo or remaining_weight + order.peso_kg > r.vehiculo.capacidad_kg:
+            continue
         routes_payload.append({
             "ruta_id": r.ruta_id,
             "stops": [{"pedido_id": d.pedido_id, "lat": d.latitud, "lng": d.longitud} for d in r.detalles]
@@ -183,7 +195,7 @@ def insert_express_order(payload: ExpressOrderInsertRequest, db: Session = Depen
         order.motivo_no_asignado = None
         target_route = db.query(Ruta).filter(Ruta.ruta_id == res["route_id"]).first()
         if target_route:
-            insert_pos = res["insert_position"]
+            insert_pos = res["insert_position"] + 1
             for d in target_route.detalles:
                 if d.orden_visita >= insert_pos:
                     d.orden_visita += 1
@@ -205,7 +217,7 @@ def insert_express_order(payload: ExpressOrderInsertRequest, db: Session = Depen
             all_stops = db.query(RutaDetalle).filter(RutaDetalle.ruta_id == target_route.ruta_id).order_by(RutaDetalle.orden_visita).all()
             
             pts = [(depot_lat, depot_lng)] + [(s.latitud, s.longitud) for s in all_stops] + [(depot_lat, depot_lng)]
-            tot_km = sum(haversine_distance(pts[k][0], pts[k][1], pts[k+1][0], pts[k+1][1]) for k in range(len(pts)-1))
+            tot_km = get_road_network().route(pts)["routes"][0]["distance"] / 1000
             
             target_route.distancia_total_km = round(tot_km, 2)
             if veh:

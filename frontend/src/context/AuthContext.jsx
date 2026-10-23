@@ -5,14 +5,10 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
     const saved = localStorage.getItem('user');
-    return saved ? JSON.parse(saved) : {
-      email: 'admin@distrirapido.pe',
-      rol: 'ADMINISTRADOR',
-      nombre_completo: 'Manuel Párraga (Admin Demo)'
-    };
+    try { return saved && localStorage.getItem('token') && localStorage.getItem('token') !== 'demo_jwt_token' ? JSON.parse(saved) : null; } catch { return null; }
   });
 
-  const [token, setToken] = useState(() => localStorage.getItem('token') || 'demo_jwt_token');
+  const [token, setToken] = useState(() => localStorage.getItem('token') || null);
 
   const loginUser = (userData, accessToken) => {
     setUser(userData);

@@ -15,7 +15,7 @@ export const Login = () => {
   const [regName, setRegName] = useState('');
   const [regEmail, setRegEmail] = useState('');
   const [regPassword, setRegPassword] = useState('');
-  const [regRole, setRegRole] = useState('OPERADOR');
+  const [regRole, setRegRole] = useState('CLIENTE');
 
   const [error, setError] = useState(null);
   const [successMsg, setSuccessMsg] = useState(null);
@@ -79,12 +79,7 @@ export const Login = () => {
     setError(null);
   };
 
-  const rolesList = [
-    { key: 'ADMINISTRADOR', label: 'Administrador', desc: 'Acceso total y control de flota' },
-    { key: 'OPERADOR', label: 'Operador Logístico', desc: 'Despacho de rutas y pedidos' },
-    { key: 'CONDUCTOR', label: 'Conductor Flota', desc: 'Ejecución y confirmación GPS' },
-    { key: 'AUDITOR', label: 'Auditor Ambiental', desc: 'Inspección de huella de carbono' }
-  ];
+  const rolesList = [{ key: 'CLIENTE', label: 'Cliente', desc: 'Consulta de pedidos y entregas' }];
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">

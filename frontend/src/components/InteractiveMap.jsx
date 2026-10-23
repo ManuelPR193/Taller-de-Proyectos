@@ -1,6 +1,7 @@
-import React from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
+import React, { useEffect, useState } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
+import { getRoadRoute, routePoints } from '../services/roadRouting';
 
 // Fix default Leaflet icon paths in React
 const depotIcon = new L.Icon({
@@ -32,6 +33,17 @@ const expressIcon = new L.Icon({
 
 const routeColors = ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899'];
 
+function MapResize() {
+  const map = useMap();
+  useEffect(() => {
+    const observer = new ResizeObserver(() => map.invalidateSize());
+    observer.observe(map.getContainer());
+    map.invalidateSize();
+    return () => observer.disconnect();
+  }, [map]);
+  return null;
+}
+
 const createStopPin = (num, color) => {
   return L.divIcon({
     className: 'custom-stop-pin',
@@ -43,6 +55,32 @@ const createStopPin = (num, color) => {
 };
 
 export const InteractiveMap = ({ routes = [], orders = [], depot = { lat: -12.0656, lng: -75.2048 } }) => {
+  const routeKeys = routes.map(route => route.detalles?.length ? JSON.stringify(routePoints(route, depot)) : null);
+  const requestKey = JSON.stringify([...new Set(routeKeys.filter(Boolean))]);
+  const [roadPaths, setRoadPaths] = useState({});
+  const [retry, setRetry] = useState(0);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const keys = JSON.parse(requestKey);
+    setRoadPaths({});
+    // Query sequentially to avoid flooding the routing service with a whole fleet.
+    async function load() {
+      for (const key of keys) {
+        if (controller.signal.aborted) return;
+        try {
+          const positions = await getRoadRoute(JSON.parse(key), controller.signal);
+          if (!controller.signal.aborted) setRoadPaths(current => ({ ...current, [key]: { positions } }));
+        } catch {
+          if (!controller.signal.aborted) setRoadPaths(current => ({ ...current, [key]: { error: true } }));
+        }
+      }
+    }
+    load();
+    return () => controller.abort();
+  }, [requestKey, retry]);
+  const pending = routeKeys.filter(key => key && !roadPaths[key]).length;
+  const failed = routeKeys.filter(key => key && roadPaths[key]?.error).length;
   // Collect order IDs that are already in route details to avoid duplicate plain markers
   const assignedOrderIds = new Set();
   routes.forEach(r => {
@@ -57,6 +95,7 @@ export const InteractiveMap = ({ routes = [], orders = [], depot = { lat: -12.06
         scrollWheelZoom={true}
         className="w-full h-full"
       >
+        <MapResize />
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -104,19 +143,19 @@ export const InteractiveMap = ({ routes = [], orders = [], depot = { lat: -12.06
         {/* Route Polylines and Stop Markers (RF-004) */}
         {routes.map((route, idx) => {
           if (!route.detalles || route.detalles.length === 0) return null;
-          const points = [
-            [depot.lat, depot.lng],
-            ...route.detalles.map(d => [d.latitud, d.longitud]),
-            [depot.lat, depot.lng]
-          ];
+          const points = roadPaths[routeKeys[idx]]?.positions;
           const pathColor = routeColors[idx % routeColors.length];
 
           return (
             <React.Fragment key={route.ruta_id || idx}>
-              <Polyline
+              {points && <Polyline
                 positions={points}
-                pathOptions={{ color: pathColor, weight: 5, opacity: 0.85, dashArray: '8, 8' }}
-              />
+                pathOptions={{ color: '#ffffff', weight: 9, opacity: 0.9, lineCap: 'round', lineJoin: 'round' }}
+              />}
+              {points && <Polyline
+                positions={points}
+                pathOptions={{ color: pathColor, weight: 5, opacity: 1, lineCap: 'round', lineJoin: 'round' }}
+              />}
               {route.detalles.map((det) => (
                 <Marker
                   key={det.ruta_detalle_id}
@@ -145,6 +184,16 @@ export const InteractiveMap = ({ routes = [], orders = [], depot = { lat: -12.06
           );
         })}
       </MapContainer>
+
+      {(pending > 0 || failed > 0) && (
+        <div role="status" className="absolute top-4 right-4 left-16 z-[1000] bg-slate-950/90 text-white text-xs p-3 rounded-lg shadow-lg">
+          {pending > 0 && <div>Calculando recorridos por calles… ({pending})</div>}
+          {failed > 0 && <div>
+            No se pudo cargar el recorrido de {failed} ruta(s). Se muestran sus paradas.
+            <button type="button" className="ml-2 underline font-semibold" onClick={() => setRetry(value => value + 1)}>Reintentar</button>
+          </div>}
+        </div>
+      )}
 
       {/* Legend Badge Overlay */}
       <div className="absolute bottom-4 left-4 z-[1000] bg-slate-950/85 backdrop-blur-md border border-slate-800 p-3 rounded-lg text-xs space-y-1.5 shadow-xl">

@@ -61,7 +61,7 @@ export const Rutas = () => {
       <div className="glass-panel p-6 border-slate-700/80 bg-gradient-to-r from-slate-900/90 via-slate-900/70 to-emerald-950/40 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
         <div className="space-y-1">
           <div className="flex items-center gap-2 text-emerald-400 font-bold text-xs uppercase tracking-wider">
-            <Sparkles className="w-4 h-4 text-emerald-400" /> Algoritmo VRPTW & Green VRP (RF-003)
+            <Sparkles className="w-4 h-4 text-emerald-400" /> Dijkstra + optimizaci?n de entregas
           </div>
           <h2 className="text-3xl font-extrabold text-white tracking-tight">Generador y Visualizador de Rutas Optimizadas</h2>
           <p className="text-slate-300 text-sm max-w-2xl">

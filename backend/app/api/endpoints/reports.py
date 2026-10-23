@@ -9,6 +9,7 @@ from app.core.config import settings
 
 router = APIRouter()
 
+@router.get("/sostenibilidad/pdf")
 @router.get("/sustainability/pdf")
 def download_sustainability_pdf(
     fecha_inicio: Optional[date] = None,
@@ -23,7 +24,7 @@ def download_sustainability_pdf(
     total_km = sum(r.distancia_total_km for r in routes)
     total_co2 = sum(r.co2_total_kg for r in routes)
     total_fuel = sum(r.combustible_estimado_l for r in routes)
-    fuel_saved = total_fuel * 0.28
+    fuel_saved = 0.0  # No measured baseline is stored
     arboles_equiv = round(total_co2 / settings.TREE_CO2_ABSORPTION_KG_YEAR, 1)
 
     rutas_resumen = []

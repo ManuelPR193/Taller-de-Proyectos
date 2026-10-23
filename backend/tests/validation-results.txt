@@ -1,0 +1,53 @@
+
+Exact 4-stop benchmark: optimum=9.4990 km, solver=9.5 km
+C:\Users\david\OneDrive\Documentos\GitHub\Taller-de-Proyectos\backend\venv\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+  from starlette.testclient import TestClient as TestClient  # noqa
+test_geometry_matches_shortest_path_distance (test_dijkstra.DijkstraTests.test_geometry_matches_shortest_path_distance) ... ok
+test_one_way_and_disconnected_nodes (test_dijkstra.DijkstraTests.test_one_way_and_disconnected_nodes) ... ok
+test_parallel_edges_choose_shortest (test_dijkstra.DijkstraTests.test_parallel_edges_choose_shortest) ... ok
+test_shortest_path_is_not_greedy_direct_edge (test_dijkstra.DijkstraTests.test_shortest_path_is_not_greedy_direct_edge) ... ok
+test_solver_uses_road_costs_for_order_and_metrics (test_dijkstra.DijkstraTests.test_solver_uses_road_costs_for_order_and_metrics) ... ok
+test_actual_pdf_endpoint (test_validation_audit.APIAudit.test_actual_pdf_endpoint) ... ok
+test_client_cannot_write_administrative_data (test_validation_audit.APIAudit.test_client_cannot_write_administrative_data) ... ok
+test_crud_normal_and_invalid_window (test_validation_audit.APIAudit.test_crud_normal_and_invalid_window) ... ok
+test_dashboard_empty_has_no_measured_savings (test_validation_audit.APIAudit.test_dashboard_empty_has_no_measured_savings) ... ok
+test_dashboard_late_delivery_not_counted_on_time (test_validation_audit.APIAudit.test_dashboard_late_delivery_not_counted_on_time) ... ok
+test_delivery_rejects_invalid_gps (test_validation_audit.APIAudit.test_delivery_rejects_invalid_gps) ... ok
+test_express_cannot_duplicate_assigned_order (test_validation_audit.APIAudit.test_express_cannot_duplicate_assigned_order) ... ok
+test_express_capacity_checked (test_validation_audit.APIAudit.test_express_capacity_checked) ... ok
+test_express_not_inserted_before_delivered_stop (test_validation_audit.APIAudit.test_express_not_inserted_before_delivered_stop) ... ok
+test_express_without_routes_preserves_order (test_validation_audit.APIAudit.test_express_without_routes_preserves_order) ... ok
+test_frontend_pdf_url_returns_pdf (test_validation_audit.APIAudit.test_frontend_pdf_url_returns_pdf) ... ok
+test_generate_and_deliver (test_validation_audit.APIAudit.test_generate_and_deliver) ... ok
+test_generate_does_not_reuse_busy_resources (test_validation_audit.APIAudit.test_generate_does_not_reuse_busy_resources) ... ok
+test_generate_preserves_routes_on_other_dates (test_validation_audit.APIAudit.test_generate_preserves_routes_on_other_dates) ... ok
+test_generate_respects_requested_date (test_validation_audit.APIAudit.test_generate_respects_requested_date) ... ok
+test_generate_without_available_vehicle_preserves_order (test_validation_audit.APIAudit.test_generate_without_available_vehicle_preserves_order) ... ok
+test_generate_without_orders (test_validation_audit.APIAudit.test_generate_without_orders) ... ok
+test_inactive_user_cannot_login (test_validation_audit.APIAudit.test_inactive_user_cannot_login) ... ok
+test_invalid_token_rejected (test_validation_audit.APIAudit.test_invalid_token_rejected) ... ok
+test_login_and_lockout (test_validation_audit.APIAudit.test_login_and_lockout) ... ok
+test_negative_order_weight_rejected (test_validation_audit.APIAudit.test_negative_order_weight_rejected) ... ok
+test_public_client_registration_and_login (test_validation_audit.APIAudit.test_public_client_registration_and_login) ... ok
+test_read_endpoints (test_validation_audit.APIAudit.test_read_endpoints) ... ok
+test_registration_cannot_self_grant_admin (test_validation_audit.APIAudit.test_registration_cannot_self_grant_admin) ... ok
+test_repeat_delivery_preserves_original_timestamp (test_validation_audit.APIAudit.test_repeat_delivery_preserves_original_timestamp) ... ok
+test_route_date_filter (test_validation_audit.APIAudit.test_route_date_filter) ... ok
+test_route_missing_resources_return_404 (test_validation_audit.APIAudit.test_route_missing_resources_return_404) ... ok
+test_unknown_api_path_returns_404 (test_validation_audit.APIAudit.test_unknown_api_path_returns_404) ... ok
+test_write_requires_authentication (test_validation_audit.APIAudit.test_write_requires_authentication) ... ok
+test_best_vehicle_not_excluded_by_input_order (test_validation_audit.SolverAudit.test_best_vehicle_not_excluded_by_input_order) ... ok
+test_exhausted_driver_rejected (test_validation_audit.SolverAudit.test_exhausted_driver_rejected) ... ok
+test_expired_window_rejected (test_validation_audit.SolverAudit.test_expired_window_rejected) ... ok
+test_fractional_weight_capacity (test_validation_audit.SolverAudit.test_fractional_weight_capacity) ... ok
+test_future_window_does_not_crash (test_validation_audit.SolverAudit.test_future_window_does_not_crash) ... ok
+test_green_objective_selects_lower_emission_vehicle (test_validation_audit.SolverAudit.test_green_objective_selects_lower_emission_vehicle) ... ok
+test_normal_assignment (test_validation_audit.SolverAudit.test_normal_assignment) ... ok
+test_overweight_rejected (test_validation_audit.SolverAudit.test_overweight_rejected) ... ok
+test_small_instance_matches_exhaustive_optimum (test_validation_audit.SolverAudit.test_small_instance_matches_exhaustive_optimum) ... ok
+test_tight_window_not_extended (test_validation_audit.SolverAudit.test_tight_window_not_extended) ... ok
+
+----------------------------------------------------------------------
+Ran 44 tests in 50.653s
+
+OK

@@ -4,6 +4,7 @@ from typing import List, Dict, Any, Tuple
 from ortools.constraint_solver import routing_enums_pb2
 from ortools.constraint_solver import pywrapcp
 from app.core.config import settings
+from app.services.road_network import get_road_network
 
 def haversine_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     """Calculates distance between two lat/lng points in Kilometers."""
@@ -28,15 +29,17 @@ class VRPTWSolver:
     - RN-008: CO2 emissions calculation per route based on vehicle factor.
     """
 
-    def __init__(self, depot_lat: float = settings.DEPOT_LAT, depot_lng: float = settings.DEPOT_LNG):
+    def __init__(self, depot_lat: float = settings.DEPOT_LAT, depot_lng: float = settings.DEPOT_LNG, road_network=None):
         self.depot_lat = depot_lat
         self.depot_lng = depot_lng
+        self.road_network = road_network
 
     def solve(
         self,
         vehicles: List[Dict[str, Any]], # [{"id": str, "placa": str, "capacidad_kg": float, "consumo_km_l": float, "factor_emision_co2": float, "anio": int}]
         drivers: List[Dict[str, Any]],  # [{"id": str, "nombre": str, "horas_conducidas": float}]
-        orders: List[Dict[str, Any]]    # [{"id": str, "lat": float, "lng": float, "peso_kg": float, "prioridad": str, "inicio": datetime, "fin": datetime}]
+        orders: List[Dict[str, Any]],    # [{"id": str, "lat": float, "lng": float, "peso_kg": float, "prioridad": str, "inicio": datetime, "fin": datetime}]
+        target_date=None,
     ) -> Dict[str, Any]:
         
         if not vehicles or not orders:
@@ -50,36 +53,27 @@ class VRPTWSolver:
             order_map[i] = order
 
         num_locations = len(locations)
-        num_vehicles = min(len(vehicles), len(drivers))
+        # Each candidate is a vehicle/driver pair; resource constraints below
+        # allow at most one active route per physical vehicle and driver.
+        pairs = [(v, d) for v in vehicles for d in drivers
+                 if d.get('horas_conducidas', 0) < settings.MAX_DRIVER_HOURS_PER_DAY]
+        vehicles = [v for v, d in pairs]
+        drivers = [d for v, d in pairs]
+        num_vehicles = len(pairs)
         if num_vehicles == 0:
             return {"routes": [], "unassigned_orders": [o["id"] for o in orders], "reason": "No vehicles or drivers matched"}
 
-        # Distance Matrix in meters (for precision in OR-Tools)
-        distance_matrix = []
-        for i in range(num_locations):
-            row = []
-            for j in range(num_locations):
-                if i == j:
-                    row.append(0)
-                else:
-                    dist_km = haversine_distance(
-                        locations[i]["lat"], locations[i]["lng"],
-                        locations[j]["lat"], locations[j]["lng"]
-                    )
-                    # Apply RN-007 penalty for high risk/unpaved road zones (e.g. Chilca alta / Cochas)
-                    # Chilca alta: lat < -12.08 | Cochas: lat > -12.04 and lng > -75.20
-                    if locations[j]["lat"] < -12.08 or (locations[j]["lat"] > -12.04 and locations[j]["lng"] > -75.20):
-                        dist_km *= 1.25
-                    row.append(int(dist_km * 1000)) # meters
-            distance_matrix.append(row)
+        # Directed shortest road distances from Dijkstra, in metres.
+        network = self.road_network or get_road_network()
+        distance_matrix = network.matrix([(p["lat"], p["lng"]) for p in locations])
 
         # OR-Tools Data Model
         data = {
             "distance_matrix": distance_matrix,
             "num_vehicles": num_vehicles,
             "depot": 0,
-            "demands": [0] + [int(o["peso_kg"]) for o in orders],
-            "vehicle_capacities": [int(v["capacidad_kg"]) for v in vehicles[:num_vehicles]]
+            "demands": [0] + [math.ceil(o["peso_kg"] * 1000) for o in orders],
+            "vehicle_capacities": [math.floor(v["capacidad_kg"] * 1000) for v in vehicles[:num_vehicles]]
         }
 
         # Create Routing Index Manager & Routing Model
@@ -92,8 +86,16 @@ class VRPTWSolver:
             to_node = manager.IndexToNode(to_node)
             return data["distance_matrix"][from_node][to_node]
 
-        transit_callback_index = routing.RegisterTransitCallback(distance_callback)
-        routing.SetArcCostEvaluatorOfAllVehicles(transit_callback_index)
+        # Native matrix evaluators keep integer costs consistent in OR-Tools.
+        for vehicle_idx, veh in enumerate(vehicles):
+            costs = [[int(round(value * (1 + veh['factor_emision_co2']))) for value in row]
+                     for row in distance_matrix]
+            cost_index = routing.RegisterTransitMatrix(costs)
+            routing.SetArcCostEvaluatorOfVehicle(cost_index, vehicle_idx)
+        for resources in (vehicles, drivers):
+            for resource_id in {r['id'] for r in resources}:
+                routing.solver().Add(sum(routing.ActiveVehicleVar(i) for i, r in enumerate(resources)
+                                         if r['id'] == resource_id) <= 1)
 
         # Apply RN-002 penalty for vehicles older than 15 years
         current_year = datetime.now().year
@@ -139,7 +141,7 @@ class VRPTWSolver:
         time_dimension = routing.GetDimensionOrDie("Time")
 
         # Define base datetime for today at 8:00 AM
-        today_date = datetime.now().date()
+        today_date = target_date or datetime.now().date()
         base_time = datetime.combine(today_date, time(hour=8, minute=0, second=0))
 
         # Apply Time Windows constraints (RN-005 / VRPTW)
@@ -151,7 +153,10 @@ class VRPTWSolver:
             if inicio and fin and isinstance(inicio, datetime) and isinstance(fin, datetime):
                 start_sec = max(0, int((inicio - base_time).total_seconds()))
                 end_sec = int((fin - base_time).total_seconds())
-                end_sec = max(start_sec + 600, min(max_work_sec, end_sec))
+                end_sec = min(max_work_sec, end_sec)
+                if end_sec < start_sec or start_sec > max_work_sec:
+                    routing.ActiveVar(index).SetValue(0)
+                    continue
             else:
                 start_sec = 0
                 end_sec = max_work_sec
@@ -166,7 +171,7 @@ class VRPTWSolver:
         for vehicle_id in range(num_vehicles):
             drv_info = drivers[vehicle_id]
             already_driven_hrs = drv_info.get("horas_conducidas", 0.0)
-            remaining_secs = max(3600, int((settings.MAX_DRIVER_HOURS_PER_DAY - already_driven_hrs) * 3600))
+            remaining_secs = max(0, int((settings.MAX_DRIVER_HOURS_PER_DAY - already_driven_hrs) * 3600))
             routing.End(vehicle_id)
             time_dimension.CumulVar(routing.End(vehicle_id)).SetRange(0, remaining_secs)
 
@@ -226,15 +231,10 @@ class VRPTWSolver:
                 route_nodes.append(0)
 
                 if route_stops:
-                    # Compute actual Haversine path distance in km
-                    route_dist_km = 0.0
-                    for k in range(len(route_nodes) - 1):
-                        n1, n2 = route_nodes[k], route_nodes[k+1]
-                        route_dist_km += haversine_distance(
-                            locations[n1]["lat"], locations[n1]["lng"],
-                            locations[n2]["lat"], locations[n2]["lng"]
-                        )
-                    
+                    # Metrics use the same shortest-road matrix as optimization and map.
+                    route_dist_km = sum(distance_matrix[a][b] for a, b in
+                                        zip(route_nodes, route_nodes[1:])) / 1000
+
                     dist_km = round(route_dist_km, 2)
                     co2_kg = round(dist_km * veh_info["factor_emision_co2"], 2) # RN-008
                     fuel_l = round(dist_km / veh_info["consumo_km_l"], 2) if veh_info["consumo_km_l"] > 0 else 0.0
