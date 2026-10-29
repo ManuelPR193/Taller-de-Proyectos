@@ -44,7 +44,16 @@ def dijkstra(graph, source, targets):
 
 class RoadNetwork:
     def __init__(self, graph):
-        self.graph = graph
+        # Conservative fleet policy: never route any vehicle over known risky,
+        # unpaved roads or roads explicitly closed to heavy goods vehicles.
+        self.graph = graph.copy()
+        for u, v, key, edge in list(self.graph.edges(keys=True, data=True)):
+            surfaces = edge.get('surface', [])
+            if isinstance(surfaces, str):
+                surfaces = [surfaces]
+            risky = {'unpaved', 'dirt', 'earth', 'ground', 'sand', 'mud', 'gravel', 'fine_gravel'}
+            if risky.intersection(surfaces) or edge.get('hgv') in ('no', 'private'):
+                self.graph.remove_edge(u, v, key)
 
     def snap(self, points):
         for lat, lng in points:
@@ -75,7 +84,7 @@ class RoadNetwork:
     def route(self, points):
         nodes = tuple(self.snap(points))
         searches = self.searches(nodes)
-        coordinates, total = [], 0.0
+        coordinates, total, segments = [], 0.0, []
         for source, target in zip(nodes, nodes[1:]):
             distances, previous = searches[source]
             if target not in distances:
@@ -84,14 +93,19 @@ class RoadNetwork:
             path = [target]
             while path[-1] != source:
                 path.append(previous[path[-1]])
+            leg = []
             for node in reversed(path):
                 point = [self.graph.nodes[node]["x"], self.graph.nodes[node]["y"]]
+                leg.append(point)
                 if not coordinates or coordinates[-1] != point:
                     coordinates.append(point)
+            if len(leg) == 1:
+                leg.append(leg[0])
+            segments.append({'coordinates': leg, 'distance': distances[target]})
         if len(coordinates) == 1:
             coordinates.append(coordinates[0])
         return {"code": "Ok", "algorithm": "dijkstra", "weight": "distance_m",
-                "routes": [{"distance": total, "geometry": {
+                "routes": [{"distance": total, "segments": segments, "geometry": {
                     "type": "LineString", "coordinates": coordinates}}]}
 
 
@@ -107,6 +121,7 @@ def get_road_network():
                 ox.settings.cache_folder = str(CACHE / "http")
                 ox.settings.requests_timeout = 90
                 # Keep every OSM node so geometry and edge distances use the same graph.
+                ox.settings.useful_tags_way = list(set(ox.settings.useful_tags_way + ['surface', 'hgv']))
                 graph = ox.graph_from_bbox(BBOX, network_type="drive", simplify=False, retain_all=True)
                 ox.save_graphml(graph, path)
             return RoadNetwork(graph)

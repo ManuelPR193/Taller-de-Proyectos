@@ -1,18 +1,22 @@
 import os
+
 from fastapi import FastAPI, Depends, HTTPException
-from app.core.security import require_write_user
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
-from fastapi.responses import JSONResponse
-from app.api.endpoints import roads
-from app.services.road_network import RoadNetworkError
+
+from app.api.endpoints import auth, clients, dashboard, drivers, orders, reports, roads, routes, vehicles
 from app.core.config import settings
-from app.db.session import engine, Base
-from app.api.endpoints import auth, vehicles, drivers, clients, orders, routes, dashboard, reports
+from app.core.security import require_write_user
+from app.db.security_migration import encrypt_legacy_driver_dni
+from app.db.session import Base, engine
+from app.db.spatial import install_spatial_index
+from app.services.road_network import RoadNetworkError
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
+encrypt_legacy_driver_dni(engine)
+install_spatial_index(engine)
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -23,15 +27,14 @@ app = FastAPI(
 # CORS Configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[origin.strip() for origin in settings.CORS_ORIGINS.split(',') if origin.strip()],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Include Routers
 @app.exception_handler(RoadNetworkError)
-async def road_error(request, exc):
+async def road_error(_request, exc):
     return JSONResponse(status_code=422, content={"detail": str(exc)})
 
 app.include_router(roads.router, prefix=f"{settings.API_V1_STR}/roads", tags=["Caminos mínimos Dijkstra"])

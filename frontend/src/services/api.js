@@ -4,6 +4,14 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || (
     : '/api/v1'
 );
 
+const headers = () => ({ Authorization: `Bearer ${localStorage.getItem('token') || ''}` });
+async function read(path) {
+  const response = await fetch(`${API_BASE_URL}${path}`, { headers: headers() });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.detail || 'No se pudo cargar la información');
+  return data;
+}
+export const today = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Lima', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
 export const api = {
   // Auth
   login: async (email, password) => {
@@ -28,10 +36,7 @@ export const api = {
   },
 
   // Vehicles (RF-001)
-  getVehicles: async () => {
-    const res = await fetch(`${API_BASE_URL}/vehicles/`);
-    return await res.json();
-  },
+  getVehicles: () => read('/vehicles/'),
   createVehicle: async (vehData) => {
     const res = await fetch(`${API_BASE_URL}/vehicles/`, {
       method: "POST",
@@ -42,12 +47,18 @@ export const api = {
     if (!res.ok) throw new Error(data.detail || "Error al guardar vehículo");
     return data;
   },
+  updateVehicleStatus: async (id, estado) => {
+    const res = await fetch(`${API_BASE_URL}/vehicles/${id}/status`, {
+      method: 'PATCH', headers: {...headers(), 'Content-Type':'application/json'},
+      body: JSON.stringify({estado})
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'No se pudo actualizar el vehículo');
+    return data;
+  },
 
   // Drivers (RF-008)
-  getDrivers: async () => {
-    const res = await fetch(`${API_BASE_URL}/drivers/`);
-    return await res.json();
-  },
+  getDrivers: () => read('/drivers/'),
   createDriver: async (drvData) => {
     const res = await fetch(`${API_BASE_URL}/drivers/`, {
       method: "POST",
@@ -60,10 +71,7 @@ export const api = {
   },
 
   // Clients
-  getClients: async () => {
-    const res = await fetch(`${API_BASE_URL}/clients/`);
-    return await res.json();
-  },
+  getClients: () => read('/clients/'),
   createClient: async (cliData) => {
     const res = await fetch(`${API_BASE_URL}/clients/`, {
       method: "POST",
@@ -76,10 +84,7 @@ export const api = {
   },
 
   // Orders (RF-002)
-  getOrders: async () => {
-    const res = await fetch(`${API_BASE_URL}/orders/`);
-    return await res.json();
-  },
+  getOrders: () => read('/orders/'),
   createOrder: async (ordData) => {
     const res = await fetch(`${API_BASE_URL}/orders/`, {
       method: "POST",
@@ -92,9 +97,21 @@ export const api = {
   },
 
   // Routes (RF-003, RF-004, RF-007)
-  getRoutes: async () => {
-    const res = await fetch(`${API_BASE_URL}/routes/`);
-    return await res.json();
+  getRoutes: (fecha) => read(`/routes/${fecha ? `?fecha=${fecha}` : ''}`),
+  getTraffic: (id) => read(`/routes/${id}/traffic`),
+  setTraffic: async (id, segment, nivel, fuente) => {
+    const r = await fetch(`${API_BASE_URL}/routes/${id}/traffic/${segment}`, {
+      method: 'PUT', headers: {...headers(), 'Content-Type':'application/json'}, body: JSON.stringify({nivel, fuente}) });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.detail || 'No se pudo guardar');
+    return data;
+  },
+  linkDriver: async (id, email) => {
+    const r = await fetch(`${API_BASE_URL}/drivers/${id}/account`, {
+      method: 'PUT', headers: {...headers(), 'Content-Type':'application/json'}, body: JSON.stringify({email}) });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.detail || 'No se pudo vincular');
+    return data;
   },
   generateRoutes: async () => {
     const res = await fetch(`${API_BASE_URL}/routes/generate`, {
@@ -128,11 +145,15 @@ export const api = {
   },
 
   // Dashboard (RF-005)
-  getDashboardMetrics: async () => {
-    const res = await fetch(`${API_BASE_URL}/dashboard/metrics`);
-    return await res.json();
-  },
-
-  // PDF Report Download (RF-006)
-  getPDFReportUrl: () => `${API_BASE_URL}/reports/sostenibilidad/pdf`
+  getDashboardMetrics: (start, end) => read(`/dashboard/metrics?${new URLSearchParams({...(start ? {fecha_inicio:start}:{}), ...(end ? {fecha_fin:end}:{})})}`),
+  getPDFReportUrl: () => `${API_BASE_URL}/reports/sostenibilidad/pdf`,
+  downloadPDF: async (start, end) => {
+    const r = await fetch(`${API_BASE_URL}/reports/sostenibilidad/pdf?${new URLSearchParams({fecha_inicio:start, fecha_fin:end})}`, {headers: headers()});
+    if (!r.ok) { const data = await r.json(); throw new Error(data.detail || 'Error al generar PDF'); }
+    if (!r.headers.get('content-type')?.includes('application/pdf')) throw new Error('El servidor no devolvi? un PDF');
+    const url = URL.createObjectURL(await r.blob());
+    const link = document.createElement('a'); link.href = url;
+    link.download = `Sostenibilidad_${start}_${end}.pdf`; document.body.appendChild(link); link.click(); link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 30000);
+  }
 };

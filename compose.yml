@@ -1,0 +1,17 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      ENVIRONMENT: development
+      SECRET_KEY: ${SECRET_KEY:-local-compose-jwt-secret-change-before-sharing}
+      DATA_ENCRYPTION_KEY: ${DATA_ENCRYPTION_KEY:-local-compose-data-secret-change-before-sharing}
+      DATABASE_URL: sqlite:////app/data/ecologistica.db
+      CORS_ORIGINS: http://localhost:8000,http://127.0.0.1:8000
+    volumes:
+      - ecologistica-data:/app/data
+    restart: unless-stopped
+
+volumes:
+  ecologistica-data:

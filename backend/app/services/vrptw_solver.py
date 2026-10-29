@@ -83,7 +83,7 @@ class VRPTWSolver:
         # Distance cost callback
         def distance_callback(from_index, to_index):
             from_node = manager.IndexToNode(from_index)
-            to_node = manager.IndexToNode(to_node)
+            to_node = manager.IndexToNode(to_index)
             return data["distance_matrix"][from_node][to_node]
 
         # Native matrix evaluators keep integer costs consistent in OR-Tools.
@@ -239,7 +239,11 @@ class VRPTWSolver:
                     co2_kg = round(dist_km * veh_info["factor_emision_co2"], 2) # RN-008
                     fuel_l = round(dist_km / veh_info["consumo_km_l"], 2) if veh_info["consumo_km_l"] > 0 else 0.0
 
+                    sequential = [0] + sorted(route_nodes[1:-1]) + [0]
+                    baseline_km = sum(distance_matrix[a][b] for a, b in zip(sequential, sequential[1:])) / 1000
                     result_routes.append({
+                        "base_distancia_km": baseline_km,
+                        "base_combustible_l": baseline_km / veh_info['consumo_km_l'],
                         "vehiculo_id": veh_info["id"],
                         "conductor_id": drv_info["id"],
                         "distancia_total_km": dist_km,

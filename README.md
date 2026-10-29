@@ -80,8 +80,8 @@ Taller-de-Proyectos/
 ## ⚡ Guía de Instalación y Ejecución
 
 ### Prerrequisitos
-- **Python** 3.10+ instalado.
-- **Node.js** 18+ y `npm` instalados.
+- **Python** 3.11+ instalado.
+- **Node.js** 22.12+ y `npm` instalados (requerido por Vite 8).
 
 ### 1. Configuración del Backend (FastAPI)
 
@@ -149,6 +149,13 @@ El proyecto cuenta con una sólida arquitectura documental desarrollada durante 
 ---
 
 ## 📜 Historial de Control de Cambios
+
+### Validación de incrementos
+
+- [Validación general de Sprints](docs/VALIDACION_GENERAL_SPRINTS_20261029.md)
+- [Validación del Sprint 1](docs/VALIDACION_SPRINT_1_20261029.md)
+- [Validación del Sprint 2](docs/VALIDACION_SPRINT_2_20261029.md)
+- [Validación del Sprint 3](docs/VALIDACION_SPRINT_3_20261029.md)
 
 | Fecha | Versión | Descripción | Documentos / Módulos Afectados |
 |---|---|---|---|

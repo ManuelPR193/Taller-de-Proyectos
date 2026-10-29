@@ -44,3 +44,11 @@ export async function getRoadRoute(points, signal) {
     signal?.removeEventListener('abort', cancel);
   }
 }
+
+export async function getRoadSegments(points, signal) {
+  const coordinates = points.map(([lat,lng]) => `${lng},${lat}`).join(';');
+  const response = await fetch(`${endpoint}?coordinates=${encodeURIComponent(coordinates)}`, {signal});
+  const data = await response.json();
+  if (!response.ok || !data.routes?.[0]?.segments) throw new Error('No se pudo cargar el mapa');
+  return data.routes[0].segments.map(s => s.coordinates.map(([lng,lat]) => [lat,lng]));
+}

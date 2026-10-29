@@ -24,15 +24,8 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('token');
   };
 
-  const switchRole = (newRole) => {
-    if (!user) return;
-    const updated = { ...user, rol: newRole };
-    setUser(updated);
-    localStorage.setItem('user', JSON.stringify(updated));
-  };
-
   return (
-    <AuthContext.Provider value={{ user, token, loginUser, logoutUser, switchRole }}>
+    <AuthContext.Provider value={{ user, token, loginUser, logoutUser }}>
       {children}
     </AuthContext.Provider>
   );

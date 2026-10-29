@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { DriverAccount } from '../components/DriverAccount';
 import { api } from '../services/api';
 import { Users, Plus, ShieldCheck, Clock, AlertCircle, Phone, CreditCard, Award, X } from 'lucide-react';
 
@@ -61,6 +62,7 @@ export const Conductores = () => {
   return (
     <div className="space-y-6 pb-12 animate-fade-in">
       
+      <DriverAccount drivers={drivers} />
       {/* Header Banner */}
       <div className="glass-panel p-6 border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>

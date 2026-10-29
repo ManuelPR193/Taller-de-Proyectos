@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from typing import Optional, Dict
-from jose import jwt, JWTError
+import jwt
+from jwt import InvalidTokenError
 from passlib.context import CryptContext
 from app.core.config import settings
 from fastapi import Depends, HTTPException, Request
@@ -10,21 +11,36 @@ from app.models.domain import Usuario
 
 bearer = HTTPBearer(auto_error=False)
 
+def current_user(credentials=Depends(bearer), db=Depends(get_db)):
+    if not credentials:
+        raise HTTPException(401, 'Debe iniciar sesión')
+    try:
+        payload = jwt.decode(credentials.credentials, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        user = db.query(Usuario).filter(Usuario.email == payload.get('sub')).first()
+    except InvalidTokenError:
+        raise HTTPException(401, 'Token inválido o vencido')
+    if not user or user.estado != 'ACTIVO':
+        raise HTTPException(401, 'Usuario inactivo o inexistente')
+    return user
+
+
 def require_write_user(request: Request, credentials=Depends(bearer), db=Depends(get_db)):
-    if request.method in ('GET', 'HEAD', 'OPTIONS'):
-        return
     if not credentials:
         raise HTTPException(401, 'Debe iniciar sesion')
     try:
         payload = jwt.decode(credentials.credentials, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         user = db.query(Usuario).filter(Usuario.email == payload.get('sub')).first()
-    except JWTError:
+    except InvalidTokenError:
         raise HTTPException(401, 'Token invalido o vencido')
     if not user or user.estado != 'ACTIVO':
         raise HTTPException(401, 'Usuario inactivo o inexistente')
+    if request.method in ('GET', 'HEAD', 'OPTIONS'):
+        return user
     allowed = {'ADMINISTRADOR', 'OPERADOR'}
     if request.url.path.endswith('/deliver-confirm'):
         allowed.add('CONDUCTOR')
+    if request.url.path.startswith(('/api/v1/clients', '/api/v1/orders')):
+        allowed.add('CLIENTE')
     if user.rol not in allowed:
         raise HTTPException(403, 'Permisos insuficientes')
     return user

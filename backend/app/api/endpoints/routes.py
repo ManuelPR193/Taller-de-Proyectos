@@ -3,23 +3,77 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 from datetime import date, datetime, timedelta
 from app.db.session import get_db
-from app.models.domain import Ruta, RutaDetalle, Pedido, Vehiculo, Conductor
+from app.models.domain import Ruta, RutaDetalle, Pedido, Vehiculo, Conductor, CuentaConductor, CuentaCliente, RutaBase, TraficoTramo, Usuario
 from app.schemas.schemas import RutaOut, RouteGenerationRequest, DeliveryConfirmationRequest, ExpressOrderInsertRequest
 from app.services.vrptw_solver import VRPTWSolver, haversine_distance
 from app.services.road_network import get_road_network
 
+from app.core.security import current_user
+from pydantic import BaseModel, Field
+from typing import Literal
+
 router = APIRouter()
 
+
+def accessible(query, user, db):
+    if user.rol == 'CONDUCTOR':
+        account = db.get(CuentaConductor, user.usuario_id)
+        query = query.filter(Ruta.conductor_id == (account.conductor_id if account else '__unlinked__'))
+    elif user.rol == 'CLIENTE':
+        account = db.get(CuentaCliente, user.usuario_id)
+        query = query.join(RutaDetalle).join(Pedido).filter(
+            Pedido.cliente_id == (account.cliente_id if account else '__unlinked__'))
+    elif user.rol not in ('ADMINISTRADOR', 'OPERADOR', 'AUDITOR'):
+        raise HTTPException(403, 'No tiene acceso a rutas operativas')
+    return query
+
+
+class TrafficInput(BaseModel):
+    nivel: Literal['BAJO', 'MEDIO', 'ALTO']
+    fuente: str = Field(min_length=3, max_length=120)
+
+
+@router.get('/{ruta_id}/traffic')
+def traffic(ruta_id: str, db: Session = Depends(get_db), user=Depends(current_user)):
+    route = accessible(db.query(Ruta), user, db).filter(Ruta.ruta_id == ruta_id).first()
+    if not route:
+        raise HTTPException(404, 'Ruta no encontrada')
+    fresh = {t.tramo: t for t in db.query(TraficoTramo).filter(
+        TraficoTramo.ruta_id == ruta_id, TraficoTramo.observado_en >= datetime.utcnow()-timedelta(minutes=30)).all()}
+    return [dict(tramo=i, nivel=fresh[i].nivel if i in fresh else 'SIN_DATOS',
+                 fuente=fresh[i].fuente if i in fresh else None,
+                 observado_en=fresh[i].observado_en if i in fresh else None)
+            for i in range(len(route.detalles)+1)]
+
+
+@router.put('/{ruta_id}/traffic/{tramo}')
+def update_traffic(ruta_id: str, tramo: int, payload: TrafficInput, db: Session = Depends(get_db), user=Depends(current_user)):
+    if user.rol not in ('ADMINISTRADOR', 'OPERADOR'):
+        raise HTTPException(403, 'Solo el operador puede registrar observaciones')
+    route = db.get(Ruta, ruta_id)
+    if not route or not 0 <= tramo <= len(route.detalles):
+        raise HTTPException(404, 'Tramo no encontrado')
+    value = db.get(TraficoTramo, (ruta_id, tramo)) or TraficoTramo(ruta_id=ruta_id, tramo=tramo)
+    value.nivel, value.fuente, value.observado_en = payload.nivel, payload.fuente.strip(), datetime.utcnow()
+    if not value.fuente:
+        raise HTTPException(422, 'Indique la fuente')
+    db.add(value)
+    db.commit()
+    return {'ok': True}
+
+
 @router.get("/", response_model=List[RutaOut])
-def get_routes(fecha: Optional[date] = None, db: Session = Depends(get_db)):
-    query = db.query(Ruta)
+def get_routes(fecha: Optional[date] = None, db: Session = Depends(get_db), user=Depends(current_user)):
+    query = accessible(db.query(Ruta), user, db)
+    if user.rol == "CONDUCTOR":
+        fecha = fecha or date.today()
     if fecha:
         query = query.filter(Ruta.fecha == fecha)
     return query.all()
 
 @router.get("/{ruta_id}", response_model=RutaOut)
-def get_route_by_id(ruta_id: str, db: Session = Depends(get_db)):
-    route = db.query(Ruta).filter(Ruta.ruta_id == ruta_id).first()
+def get_route_by_id(ruta_id: str, db: Session = Depends(get_db), user=Depends(current_user)):
+    route = accessible(db.query(Ruta), user, db).filter(Ruta.ruta_id == ruta_id).first()
     if not route:
         raise HTTPException(status_code=404, detail="Ruta no encontrada")
     return route
@@ -41,6 +95,8 @@ def generate_routes(payload: RouteGenerationRequest, db: Session = Depends(get_d
                     if p and p.estado == "ASIGNADO":
                         p.estado = "PENDIENTE"
                         p.motivo_no_asignado = None
+                db.query(RutaBase).filter(RutaBase.ruta_id == r.ruta_id).delete()
+                db.query(TraficoTramo).filter(TraficoTramo.ruta_id == r.ruta_id).delete()
                 db.delete(r)
             db.flush()
             pending_orders = db.query(Pedido).filter(Pedido.estado == "PENDIENTE").all()
@@ -104,6 +160,8 @@ def generate_routes(payload: RouteGenerationRequest, db: Session = Depends(get_d
         db.add(new_route)
         db.flush()
 
+        db.add(RutaBase(ruta_id=new_route.ruta_id, distancia_km=r_data['base_distancia_km'],
+                        combustible_l=r_data['base_combustible_l']))
         for idx, stop in enumerate(r_data["stops"], start=1):
             detail = RutaDetalle(
                 ruta_id=new_route.ruta_id,
@@ -135,12 +193,14 @@ def generate_routes(payload: RouteGenerationRequest, db: Session = Depends(get_d
     return created_routes
 
 @router.post("/deliver-confirm")
-def confirm_delivery(payload: DeliveryConfirmationRequest, db: Session = Depends(get_db)):
+def confirm_delivery(payload: DeliveryConfirmationRequest, db: Session = Depends(get_db), user=Depends(current_user)):
     """RN-010: Mandatory delivery confirmation with GPS and timestamp from Driver Mode."""
     detail = db.query(RutaDetalle).filter(RutaDetalle.ruta_detalle_id == payload.ruta_detalle_id).first()
     if not detail:
         raise HTTPException(status_code=404, detail="Detalle de ruta no encontrado.")
 
+    if not accessible(db.query(Ruta), user, db).filter(Ruta.ruta_id == detail.ruta_id).first():
+        raise HTTPException(403, 'La entrega pertenece a otro conductor')
     if detail.hora_real_entrega is not None:
         return {"message": "Entrega ya confirmada", "hora_entrega": detail.hora_real_entrega}
     detail.hora_real_entrega = datetime.now()
@@ -211,6 +271,9 @@ def insert_express_order(payload: ExpressOrderInsertRequest, db: Session = Depen
             db.add(new_detail)
             db.flush()
 
+            # Insertion invalidates the previous comparison and traffic segment numbering.
+            db.query(RutaBase).filter(RutaBase.ruta_id == target_route.ruta_id).delete()
+            db.query(TraficoTramo).filter(TraficoTramo.ruta_id == target_route.ruta_id).delete()
             # Recalculate route metrics
             veh = target_route.vehiculo
             depot_lat, depot_lng = solver.depot_lat, solver.depot_lng

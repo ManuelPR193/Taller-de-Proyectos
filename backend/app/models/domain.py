@@ -3,6 +3,7 @@ from datetime import datetime, date
 from sqlalchemy import Column, String, Float, Integer, ForeignKey, DateTime, Date, Text, Boolean
 from sqlalchemy.orm import relationship
 from app.db.session import Base
+from app.db.types import EncryptedString
 
 def generate_uuid():
     return str(uuid.uuid4())
@@ -36,7 +37,8 @@ class Conductor(Base):
 
     conductor_id = Column(String(36), primary_key=True, default=generate_uuid)
     nombre = Column(String(150), nullable=False)
-    dni = Column(String(8), unique=True, nullable=False, index=True)
+    # AES-256-GCM at rest; the API exposes plaintext only to authorized roles.
+    dni = Column(EncryptedString(), unique=True, nullable=False)
     categoria_licencia = Column(String(10), nullable=False)
     anios_experiencia = Column(Integer, default=0)
     horas_conducidas_dia = Column(Float, default=0.0) # RN-003 <= 8h limit
@@ -122,3 +124,31 @@ class ReporteSostenibilidad(Base):
     arboles_equivalentes = Column(Float, default=0.0)
     generado_por = Column(String(36), ForeignKey("usuarios.usuario_id"), nullable=True)
     creado_en = Column(DateTime, default=datetime.utcnow)
+
+
+class CuentaConductor(Base):
+    __tablename__ = 'cuentas_conductor'
+    usuario_id = Column(String(36), ForeignKey('usuarios.usuario_id'), primary_key=True)
+    conductor_id = Column(String(36), ForeignKey('conductores.conductor_id'), unique=True, nullable=False)
+
+
+class CuentaCliente(Base):
+    __tablename__ = 'cuentas_cliente'
+    usuario_id = Column(String(36), ForeignKey('usuarios.usuario_id'), primary_key=True)
+    cliente_id = Column(String(36), ForeignKey('clientes.cliente_id'), unique=True, nullable=False)
+
+
+class RutaBase(Base):
+    __tablename__ = 'rutas_base_secuencial'
+    ruta_id = Column(String(36), ForeignKey('rutas.ruta_id'), primary_key=True)
+    distancia_km = Column(Float, nullable=False)
+    combustible_l = Column(Float, nullable=False)
+
+
+class TraficoTramo(Base):
+    __tablename__ = 'trafico_tramos'
+    ruta_id = Column(String(36), ForeignKey('rutas.ruta_id'), primary_key=True)
+    tramo = Column(Integer, primary_key=True)
+    nivel = Column(String(12), nullable=False)
+    fuente = Column(String(120), nullable=False)
+    observado_en = Column(DateTime, nullable=False)

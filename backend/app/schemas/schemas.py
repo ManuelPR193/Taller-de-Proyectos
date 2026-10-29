@@ -54,7 +54,7 @@ class VehiculoOut(VehiculoCreate):
 # Driver Schemas (RF-008)
 class ConductorCreate(BaseModel):
     nombre: str
-    dni: str
+    dni: str = Field(pattern=r'^\d{8}$')
     categoria_licencia: str
     anios_experiencia: int = 0
     horas_conducidas_dia: float = 0.0 # RN-003 <= 8h limit

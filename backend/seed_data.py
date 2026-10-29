@@ -5,7 +5,7 @@ from datetime import datetime, timedelta, date
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from app.db.session import SessionLocal, engine, Base
-from app.models.domain import Usuario, Vehiculo, Conductor, Cliente, Pedido, Ruta, RutaDetalle, ReporteSostenibilidad
+from app.models.domain import Usuario, Vehiculo, Conductor, Cliente, Pedido, Ruta, RutaDetalle, ReporteSostenibilidad, CuentaConductor
 from app.core.security import get_password_hash
 
 def seed():
@@ -117,6 +117,7 @@ def seed():
         )
         db.add_all([c1, c2, c3])
         db.flush()
+        db.add(CuentaConductor(usuario_id=u_conductor.usuario_id, conductor_id=c1.conductor_id))
 
         # 4. Clientes en el Valle del Mantaro (Huancayo, El Tambo, Chilca, Pilcomayo)
         cli1 = Cliente(

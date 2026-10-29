@@ -66,6 +66,17 @@ export const Vehiculos = () => {
     return v.tipo === filterType;
   });
 
+  const changeStatus = async (vehicle, estado) => {
+    setError(null);
+    try {
+      const result = await api.updateVehicleStatus(vehicle.vehiculo_id, estado);
+      if (result.advertencia) setError(result.advertencia);
+      loadVehicles();
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
   return (
     <div className="space-y-6 pb-12 animate-fade-in">
 
@@ -148,6 +159,10 @@ export const Vehiculos = () => {
                 <span>Estado: <strong className="text-emerald-300">{v.estado}</strong></span>
               </span>
             </div>
+            <button type="button" className="btn-secondary w-full text-xs"
+              onClick={() => changeStatus(v, v.estado === 'MANTENIMIENTO' ? 'DISPONIBLE' : 'MANTENIMIENTO')}>
+              {v.estado === 'MANTENIMIENTO' ? 'Marcar disponible' : 'Reportar avería y reasignar'}
+            </button>
           </div>
         ))}
       </div>

@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { api } from '../services/api';
-import { InteractiveMap } from '../components/InteractiveMap';
+import React, { useEffect, useState, lazy, Suspense } from 'react';
+import { api, today } from '../services/api';
+const InteractiveMap = lazy(()=>import('../components/InteractiveMap').then(m=>({default:m.InteractiveMap})));
 import { Play, Zap, CheckCircle2, AlertTriangle, Truck, Clock, Sparkles, Navigation, Layers, ShieldCheck } from 'lucide-react';
 
 export const Rutas = () => {
@@ -12,14 +12,14 @@ export const Rutas = () => {
 
   const loadData = () => {
     setLoading(true);
-    Promise.all([api.getRoutes(), api.getOrders()])
+    Promise.all([api.getRoutes(today()), api.getOrders()])
       .then(([rData, oData]) => {
         setRoutes(rData);
         setOrders(oData);
         setLoading(false);
       })
       .catch(err => {
-        console.error("Error loading routes data:", err);
+        setMessage({type:"error",text:err.message});
         setLoading(false);
       });
   };
@@ -61,7 +61,7 @@ export const Rutas = () => {
       <div className="glass-panel p-6 border-slate-700/80 bg-gradient-to-r from-slate-900/90 via-slate-900/70 to-emerald-950/40 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
         <div className="space-y-1">
           <div className="flex items-center gap-2 text-emerald-400 font-bold text-xs uppercase tracking-wider">
-            <Sparkles className="w-4 h-4 text-emerald-400" /> Dijkstra + optimizaci?n de entregas
+            <Sparkles className="w-4 h-4 text-emerald-400" /> Dijkstra + optimización de entregas
           </div>
           <h2 className="text-3xl font-extrabold text-white tracking-tight">Generador y Visualizador de Rutas Optimizadas</h2>
           <p className="text-slate-300 text-sm max-w-2xl">
@@ -144,7 +144,7 @@ export const Rutas = () => {
             Cargando georreferenciación en mapa...
           </div>
         ) : (
-          <InteractiveMap routes={routes} orders={orders} />
+          <Suspense fallback={<p>Cargando mapa; consulte las paradas abajo.</p>}><InteractiveMap routes={routes} orders={orders} /></Suspense>
         )}
       </div>
 

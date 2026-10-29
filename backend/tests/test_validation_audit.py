@@ -8,6 +8,7 @@ import sys
 import tempfile
 import unittest
 from datetime import datetime, timedelta, time
+from io import BytesIO
 from itertools import permutations
 from pathlib import Path
 
@@ -30,9 +31,12 @@ def audit_db():
         yield db
 
 app.dependency_overrides[get_db] = audit_db
-from app.models.domain import Cliente, Conductor, Pedido, Ruta, RutaDetalle, Usuario, Vehiculo
+from app.models.domain import (Cliente, Conductor, CuentaCliente, CuentaConductor,
+                               Pedido, Ruta, RutaBase, RutaDetalle, TraficoTramo,
+                               Usuario, Vehiculo)
 from app.core.security import get_password_hash, failed_login_tracker
 from app.services.vrptw_solver import VRPTWSolver, haversine_distance
+from app.db.spatial import install_spatial_index
 
 BASE = datetime.combine(datetime.now().date(), time(8))
 
@@ -41,6 +45,8 @@ def tearDownModule():
     # Release pooled SQLite handles before deleting the temporary DB on Windows.
     app.dependency_overrides.pop(get_db, None)
     engine.dispose()
+    from app.db.session import engine as application_engine
+    application_engine.dispose()
     _temp.cleanup()
 
 
@@ -136,6 +142,7 @@ class APIAudit(unittest.TestCase):
     def setUp(self):
         Base.metadata.drop_all(engine)
         Base.metadata.create_all(engine)
+        install_spatial_index(engine)
         failed_login_tracker.clear()
         self.client = TestClient(app, raise_server_exceptions=False)
         with SessionLocal() as db:
@@ -207,8 +214,17 @@ class APIAudit(unittest.TestCase):
         with SessionLocal() as db:
             db.get(Usuario, 'u1').rol = 'CLIENTE'
             db.commit()
-        response = self.client.post('/api/v1/clients/', json=dict(nombre_negocio='Test', distrito='Huancayo', latitud=-12.06, longitud=-75.2))
+        response = self.client.post('/api/v1/vehicles/', json=dict(
+            placa='ABC-123', tipo='FURGON', capacidad_kg=100,
+            consumo_km_l=10, factor_emision_co2=.2, anio_fabricacion=2025))
         self.assertEqual(response.status_code, 403)
+
+    def test_reads_require_authentication(self):
+        self.client.headers.pop('Authorization')
+        for path in ('/api/v1/vehicles/', '/api/v1/dashboard/metrics',
+                     '/api/v1/reports/sostenibilidad/pdf'):
+            with self.subTest(path=path):
+                self.assertEqual(self.client.get(path).status_code, 401)
 
     def test_public_client_registration_and_login(self):
         self.client.headers.pop('Authorization')
@@ -217,6 +233,44 @@ class APIAudit(unittest.TestCase):
         response = self.client.post('/api/v1/auth/login', json=dict(email='new@example.com', password='test123'))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['rol'], 'CLIENTE')
+
+    def test_client_profile_orders_and_routes_are_isolated(self):
+        self.add_route()
+        with SessionLocal() as db:
+            user = Usuario(usuario_id='client-user', email='client@example.com',
+                           password_hash=get_password_hash('test123'), rol='CLIENTE', estado='ACTIVO')
+            other = Cliente(cliente_id='c2', nombre_negocio='Otro', distrito='Chilca',
+                            latitud=-12.08, longitud=-75.20)
+            db.add_all([user, other])
+            db.flush()
+            db.add(CuentaCliente(usuario_id=user.usuario_id, cliente_id='c1'))
+            db.add(Pedido(pedido_id='other-order', cliente_id='c2', latitud=-12.08,
+                          longitud=-75.20, peso_kg=1, volumen_m3=.1,
+                          ventana_inicio=BASE, ventana_fin=BASE+timedelta(hours=1),
+                          estado='PENDIENTE'))
+            db.commit()
+        from app.core.security import create_access_token
+        self.client.headers['Authorization'] = 'Bearer ' + create_access_token({'sub': 'client@example.com'})
+        self.assertEqual([c['cliente_id'] for c in self.client.get('/api/v1/clients/').json()], ['c1'])
+        self.assertEqual([o['pedido_id'] for o in self.client.get('/api/v1/orders/').json()], ['o1'])
+        self.assertEqual([r['ruta_id'] for r in self.client.get('/api/v1/routes/').json()], ['r1'])
+
+    def test_new_client_can_create_one_profile_and_own_order(self):
+        with SessionLocal() as db:
+            db.add(Usuario(usuario_id='new-client', email='new-client@example.com',
+                           password_hash=get_password_hash('test123'), rol='CLIENTE', estado='ACTIVO'))
+            db.commit()
+        from app.core.security import create_access_token
+        self.client.headers['Authorization'] = 'Bearer ' + create_access_token({'sub': 'new-client@example.com'})
+        profile = self.client.post('/api/v1/clients/', json=dict(
+            nombre_negocio='Mi bodega', distrito='Huancayo', latitud=-12.06, longitud=-75.20))
+        self.assertEqual(profile.status_code, 200, profile.text)
+        self.assertEqual(self.client.post('/api/v1/clients/', json=dict(
+            nombre_negocio='Duplicada', distrito='Huancayo', latitud=-12.06, longitud=-75.20)).status_code, 409)
+        payload = dict(cliente_id=profile.json()['cliente_id'], latitud=-12.06, longitud=-75.20,
+                       peso_kg=2, volumen_m3=.1, ventana_inicio=BASE.isoformat(),
+                       ventana_fin=(BASE+timedelta(hours=1)).isoformat())
+        self.assertEqual(self.client.post('/api/v1/orders/', json=payload).status_code, 200)
 
     def test_registration_cannot_self_grant_admin(self):
         response = self.client.post("/api/v1/auth/register", json=dict(email="new@example.com", password="test123", rol="ADMINISTRADOR"))
@@ -230,6 +284,35 @@ class APIAudit(unittest.TestCase):
         self.assertEqual(self.client.post("/api/v1/orders/", json=payload).status_code, 200)
         payload["ventana_fin"] = payload["ventana_inicio"]
         self.assertEqual(self.client.post("/api/v1/orders/", json=payload).status_code, 400)
+
+    def test_vehicle_create_update_and_future_year(self):
+        payload = dict(placa='ABC-123', tipo='FURGON', capacidad_kg=100,
+                       consumo_km_l=10, factor_emision_co2=.2,
+                       anio_fabricacion=datetime.now().year)
+        created = self.client.post('/api/v1/vehicles/', json=payload)
+        self.assertEqual(created.status_code, 200, created.text)
+        payload['consumo_km_l'] = 12
+        updated = self.client.post('/api/v1/vehicles/', json=payload)
+        self.assertEqual(updated.status_code, 200, updated.text)
+        self.assertEqual(updated.json()['vehiculo_id'], created.json()['vehiculo_id'])
+        self.assertEqual(updated.json()['consumo_km_l'], 12)
+        payload['placa'] = 'FUT-001'
+        payload['anio_fabricacion'] = datetime.now().year + 1
+        self.assertEqual(self.client.post('/api/v1/vehicles/', json=payload).status_code, 400)
+
+    def test_driver_dni_is_aes_encrypted_at_rest(self):
+        payload = dict(nombre='Conductor seguro', dni='11223344', categoria_licencia='A2',
+                       anios_experiencia=2, horas_conducidas_dia=1)
+        response = self.client.post('/api/v1/drivers/', json=payload)
+        self.assertEqual(response.status_code, 200, response.text)
+        self.assertEqual(response.json()['dni'], '11223344')
+        with engine.connect() as connection:
+            stored = connection.exec_driver_sql(
+                "SELECT dni FROM conductores WHERE conductor_id=?", (response.json()['conductor_id'],)).scalar_one()
+        self.assertTrue(stored.startswith('enc:v1:'), stored)
+        self.assertNotIn('11223344', stored)
+        payload['nombre'] = 'Duplicado'
+        self.assertEqual(self.client.post('/api/v1/drivers/', json=payload).status_code, 400)
 
     def test_negative_order_weight_rejected(self):
         response = self.client.post("/api/v1/orders/", json=dict(cliente_id="c1", latitud=-12.06, longitud=-75.2,
@@ -275,6 +358,43 @@ class APIAudit(unittest.TestCase):
             fecha=(BASE + timedelta(days=1)).date().isoformat()))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), [])
+
+    def test_conductor_only_receives_linked_routes(self):
+        self.add_route()
+        with SessionLocal() as db:
+            db.add_all([
+                Usuario(usuario_id='driver-user', email='driver@example.com',
+                        password_hash=get_password_hash('test123'), rol='CONDUCTOR', estado='ACTIVO'),
+                Vehiculo(vehiculo_id='v2', placa='TEST-2', tipo='FURGON', capacidad_kg=100,
+                         consumo_km_l=10, factor_emision_co2=.2, anio_fabricacion=2025),
+                Conductor(conductor_id='d2', nombre='Otro', dni='87654321', categoria_licencia='A2'),
+                Pedido(pedido_id='o2', cliente_id='c1', latitud=-12.06, longitud=-75.20,
+                       peso_kg=1, volumen_m3=.1, ventana_inicio=BASE,
+                       ventana_fin=BASE+timedelta(hours=1), estado='ASIGNADO')])
+            db.flush()
+            db.add_all([
+                CuentaConductor(usuario_id='driver-user', conductor_id='d1'),
+                Ruta(ruta_id='r2', vehiculo_id='v2', conductor_id='d2', fecha=BASE.date()),
+                RutaDetalle(ruta_detalle_id='s2', ruta_id='r2', pedido_id='o2', orden_visita=1,
+                            latitud=-12.06, longitud=-75.20, hora_estimada=BASE)])
+            db.commit()
+        from app.core.security import create_access_token
+        self.client.headers['Authorization'] = 'Bearer ' + create_access_token({'sub': 'driver@example.com'})
+        self.assertEqual([r['ruta_id'] for r in self.client.get('/api/v1/routes/').json()], ['r1'])
+        self.assertEqual(self.client.get('/api/v1/routes/r2').status_code, 404)
+
+    def test_traffic_defaults_updates_and_expiry(self):
+        self.add_route()
+        path = '/api/v1/routes/r1/traffic'
+        value = self.client.get(path)
+        self.assertEqual(value.status_code, 200, value.text)
+        self.assertEqual([x['nivel'] for x in value.json()], ['SIN_DATOS', 'SIN_DATOS'])
+        self.assertEqual(self.client.put(path + '/0', json=dict(nivel='ALTO', fuente='Operador')).status_code, 200)
+        self.assertEqual(self.client.get(path).json()[0]['nivel'], 'ALTO')
+        with SessionLocal() as db:
+            db.get(TraficoTramo, ('r1', 0)).observado_en = datetime.utcnow()-timedelta(minutes=31)
+            db.commit()
+        self.assertEqual(self.client.get(path).json()[0]['nivel'], 'SIN_DATOS')
 
     def test_generate_without_orders(self):
         response = self.client.post("/api/v1/routes/generate", json={})
@@ -341,6 +461,22 @@ class APIAudit(unittest.TestCase):
         assignments = [(r["fecha"], r["vehiculo_id"], r["conductor_id"]) for r in routes]
         self.assertEqual(len(assignments), len(set(assignments)), "Same vehicle and driver assigned to multiple independent routes")
 
+    def test_vehicle_breakdown_reassigns_unfinished_orders(self):
+        self.add_route()
+        with SessionLocal() as db:
+            db.add(Vehiculo(vehiculo_id='v2', placa='BACKUP-2', tipo='FURGON', capacidad_kg=200,
+                            consumo_km_l=10, factor_emision_co2=.2, anio_fabricacion=2025))
+            db.commit()
+        response = self.client.patch('/api/v1/vehicles/v1/status', json={'estado': 'MANTENIMIENTO'})
+        self.assertEqual(response.status_code, 200, response.text)
+        self.assertEqual(response.json()['pedidos_afectados'], ['o1'])
+        self.assertTrue(response.json()['rutas_reasignadas'], response.text)
+        with SessionLocal() as db:
+            self.assertEqual(db.get(Ruta, 'r1').estado, 'CANCELADA')
+            reassigned = db.query(Ruta).filter(Ruta.ruta_id != 'r1').one()
+            self.assertEqual(reassigned.vehiculo_id, 'v2')
+            self.assertEqual(db.get(Pedido, 'o1').estado, 'ASIGNADO')
+
     def test_express_capacity_checked(self):
         self.add_route()
         self.add_order("express", peso_kg=1000, prioridad="EXPRESS")
@@ -376,6 +512,43 @@ class APIAudit(unittest.TestCase):
     def test_dashboard_empty_has_no_measured_savings(self):
         value = self.client.get("/api/v1/dashboard/metrics").json()
         self.assertEqual(value["ahorro_vs_secuencial_porcentaje"], 0)
+
+    def test_dashboard_period_and_partial_pdf(self):
+        self.add_route(delivered=True)
+        with SessionLocal() as db:
+            route = db.get(Ruta, 'r1')
+            route.distancia_total_km = 10
+            route.co2_total_kg = 2
+            route.combustible_estimado_l = 1
+            db.add(RutaBase(ruta_id='r1', distancia_km=12, combustible_l=1.2))
+            db.commit()
+        start = (BASE.date()-timedelta(days=1)).isoformat()
+        end = (BASE.date()+timedelta(days=1)).isoformat()
+        params = dict(fecha_inicio=start, fecha_fin=end)
+        value = self.client.get('/api/v1/dashboard/metrics', params=params).json()
+        self.assertEqual(value['distancia_total_km'], 10)
+        self.assertEqual(value['co2_total_kg'], 2)
+        self.assertEqual(value['combustible_ahorrado_l'], .2)
+        self.assertEqual(value['cumplimiento_ventanas_porcentaje'], 100)
+        self.assertEqual(len(value['dias_sin_informacion']), 2)
+        response = self.client.get('/api/v1/reports/sostenibilidad/pdf', params=params)
+        self.assertEqual(response.status_code, 200)
+        from pypdf import PdfReader
+        pdf_text = '\n'.join(page.extract_text() or '' for page in PdfReader(BytesIO(response.content)).pages)
+        self.assertIn('Días sin información', pdf_text)
+        self.assertIn(start, pdf_text)
+
+    def test_spatial_viewport_uses_rtree_and_stays_synchronized(self):
+        self.add_order()
+        response = self.client.get('/api/v1/orders/viewport/ids', params=dict(
+            south=-12.07, north=-12.06, west=-75.21, east=-75.20))
+        self.assertEqual(response.status_code, 200, response.text)
+        self.assertEqual(response.json(), ['o1'])
+        with engine.connect() as connection:
+            plan = ' '.join(str(row) for row in connection.exec_driver_sql(
+                'EXPLAIN QUERY PLAN SELECT * FROM pedidos_geo WHERE min_lat<=-12.06 AND max_lat>=-12.07 '
+                'AND min_lng<=-75.20 AND max_lng>=-75.21').all())
+        self.assertIn('VIRTUAL TABLE INDEX', plan.upper())
 
 
 if __name__ == "__main__":

@@ -1,4 +1,5 @@
 import io
+from xml.sax.saxutils import escape
 from datetime import date
 from reportlab.lib.pagesizes import letter
 from reportlab.lib import colors
@@ -14,7 +15,9 @@ def generate_sustainability_pdf(
     combustible_ahorrado_l: float,
     cumplimiento_ventanas_pct: float,
     arboles_equivalentes: float,
-    rutas_resumen: list
+    rutas_resumen: list,
+    dias_sin_informacion=None,
+    rutas_sin_base=0
 ) -> bytes:
     """Generates a professional Sustainability PDF Report (RF-006)."""
     buffer = io.BytesIO()
@@ -77,7 +80,7 @@ def generate_sustainability_pdf(
 
     # Header Title
     elements.append(Paragraph("EcoLogística Huancayo — DistriRápido S.A.C.", title_style))
-    elements.append(Paragraph(f"REPORTE OFICIAL DE SOSTENIBILIDAD Y EMISIONES DE CARBONO", title_style))
+    elements.append(Paragraph(f"REPORTE DE SOSTENIBILIDAD Y EMISIONES DE CARBONO", title_style))
     elements.append(Paragraph(f"Periodo evaluado: <b>{periodo_inicio.strftime('%d/%m/%Y')}</b> al <b>{periodo_fin.strftime('%d/%m/%Y')}</b> | Cobertura: Valle del Mantaro", subtitle_style))
     elements.append(HRFlowable(width="100%", thickness=2, color=PRIMARY, spaceAfter=15))
 
@@ -101,7 +104,7 @@ def generate_sustainability_pdf(
             Paragraph("<b>Plan Compensación Árboles (RN-009)</b>", body_style),
             Paragraph(f"<b>{arboles_equivalentes:.1f} árboles/año</b>", body_style),
             Paragraph("<b>Estado de Huella Carbono</b>", body_style),
-            Paragraph("<font color='#047857'><b>OPTIMIZADO (Green VRP)</b></font>", body_style),
+            Paragraph("<font color='#047857'><b>ESTIMACIÓN DE RUTAS</b></font>", body_style),
         ]
     ]
 
@@ -117,7 +120,7 @@ def generate_sustainability_pdf(
     elements.append(Spacer(1, 15))
 
     # Table of Executed Routes
-    elements.append(Paragraph("2. Detalle Operativo por Ruta Ejecutada", h2_style))
+    elements.append(Paragraph("2. Detalle Operativo por Ruta Planificada", h2_style))
     
     routes_headers = ["Fecha", "Placa Vehículo", "Conductor", "Distancia (km)", "CO₂ Emitido (kg)", "Combustible (L)", "Estado"]
     routes_rows = [[Paragraph(f"<b>{h}</b>", body_style) for h in routes_headers]]
@@ -125,8 +128,8 @@ def generate_sustainability_pdf(
     for r in rutas_resumen:
         routes_rows.append([
             Paragraph(r.get("fecha", "-"), body_style),
-            Paragraph(r.get("placa", "-"), body_style),
-            Paragraph(r.get("conductor", "-"), body_style),
+            Paragraph(escape(r.get("placa", "-")), body_style),
+            Paragraph(escape(r.get("conductor", "-")), body_style),
             Paragraph(f"{r.get('distancia', 0):.2f}", body_style),
             Paragraph(f"{r.get('co2', 0):.2f}", body_style),
             Paragraph(f"{r.get('combustible', 0):.2f}", body_style),
@@ -136,7 +139,7 @@ def generate_sustainability_pdf(
     if len(routes_rows) == 1:
         routes_rows.append([Paragraph("No se registraron rutas ejecutadas en el periodo seleccionado", body_style)] + [""] * 6)
 
-    routes_table = Table(routes_rows, colWidths=[65, 80, 110, 80, 85, 70, 70])
+    routes_table = Table(routes_rows, colWidths=[63, 62, 105, 64, 68, 65, 113], repeatRows=1)
     routes_table.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,0), PRIMARY),
         ('TEXTCOLOR', (0,0), (-1,0), colors.white),
@@ -147,15 +150,13 @@ def generate_sustainability_pdf(
     elements.append(routes_table)
     elements.append(Spacer(1, 20))
 
-    # Business Rules Compliance Note
-    elements.append(Paragraph("3. Certificación de Cumplimiento Normativo y Ambiental", h2_style))
-    cert_text = (
-        "Este reporte valida el cumplimiento de las Reglas de Negocio del PFA EcoLogística Huancayo:<br/>"
-        "• <b>RN-003:</b> Garantía de jornada laboral máxima de 8 horas continuas por conductor (Ley N° 30224).<br/>"
-        "• <b>RN-008:</b> Cálculo de huella de carbono según factores específicos por tipo de vehículo y motor.<br/>"
-        "• <b>RN-009:</b> Estimación de plan de compensación de carbono para el ecosistema del Valle del Mantaro."
-    )
-    elements.append(Paragraph(cert_text, body_style))
+    elements.append(Paragraph("3. Cobertura y metodología", h2_style))
+    elements.append(Paragraph("Distancia vial planificada; emisiones = distancia por factor del vehículo. "
+        "Ahorro estimado frente al orden secuencial de los mismos pedidos y vehículo, no ahorro medido en conducción. "
+        "Cumplimiento calculado con entregas confirmadas y ventanas registradas. "
+        "Árboles equivalentes = kg CO2 / factor anual configurado.", body_style))
+    elements.append(Paragraph(f"Rutas sin base de comparación: {rutas_sin_base}. No se les atribuye ahorro.", body_style))
+    elements.append(Paragraph("Días sin información: " + (", ".join(dias_sin_informacion or []) or "Ninguno"), body_style))
     elements.append(Spacer(1, 25))
 
     # Signatures Footer
