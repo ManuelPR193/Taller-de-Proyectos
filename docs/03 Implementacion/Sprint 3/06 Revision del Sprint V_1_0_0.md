@@ -7,8 +7,8 @@
 | **Proyecto** | EcoLogística Huancayo — Optimizador de Rutas Sostenibles para "DistriRápido S.A.C." |
 | **Sprint** | 3 (semanas 8 a 11) |
 | **Versión del documento** | 1.0.0 |
-| **Fecha** | [AAAA-MM-DD] |
-| **Elaborado por** | [Autor] |
+| **Fecha** | [2026-10-24] |
+| **Elaborado por** | [Manuel Parraga] |
 | **Equipo** | Manuel Yeferson Parraga Recuay, Sheila Suarez Suarez, David André Guevara Moscoso, Jair Felix Romero |
 | **Docente** | Job Daniel Gamarra Moreno |
 
