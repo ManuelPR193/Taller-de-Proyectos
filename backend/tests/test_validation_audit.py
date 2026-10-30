@@ -11,6 +11,7 @@ from datetime import datetime, timedelta, time
 from io import BytesIO
 from itertools import permutations
 from pathlib import Path
+from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 _temp = tempfile.TemporaryDirectory(prefix="ecologistica-audit-")
@@ -41,6 +42,34 @@ from app.db.spatial import install_spatial_index
 BASE = datetime.combine(datetime.now().date(), time(8))
 
 
+class DeterministicNetwork:
+    """Offline distance provider for unit/API tests.
+
+    Road graph download and Dijkstra behavior have their own focused tests.
+    The functional suite must never depend on Overpass availability.
+    """
+
+    def matrix(self, points):
+        return [
+            [0 if a == b else max(1, int(round(haversine_distance(*a, *b) * 1250)))
+             for b in points]
+            for a in points
+        ]
+
+    def route(self, points):
+        matrix = self.matrix(points)
+        distance = sum(matrix[index][index + 1] for index in range(len(points) - 1))
+        coordinates = [[lng, lat] for lat, lng in points]
+        return {"code": "Ok", "algorithm": "deterministic-test", "routes": [{
+            "distance": distance,
+            "segments": [],
+            "geometry": {"type": "LineString", "coordinates": coordinates},
+        }]}
+
+
+TEST_NETWORK = DeterministicNetwork()
+
+
 def tearDownModule():
     # Release pooled SQLite handles before deleting the temporary DB on Windows.
     app.dependency_overrides.pop(get_db, None)
@@ -64,8 +93,9 @@ def order(identifier="o1", **changes):
 
 class SolverAudit(unittest.TestCase):
     def solve(self, orders, vehicles=None, hours=0):
-        return VRPTWSolver().solve(vehicles or [vehicle()],
-                                  [dict(id="d1", nombre="Test", horas_conducidas=hours)], orders)
+        return VRPTWSolver(road_network=TEST_NETWORK).solve(
+            vehicles or [vehicle()],
+            [dict(id="d1", nombre="Test", horas_conducidas=hours)], orders)
 
     def test_normal_assignment(self):
         result = self.solve([order()])
@@ -114,8 +144,9 @@ class SolverAudit(unittest.TestCase):
         dirty.update(id="dirty", factor_emision_co2=2, consumo_km_l=2)
         results = []
         for fleet in ([clean, dirty], [dirty, clean]):
-            result = VRPTWSolver().solve(fleet, [dict(id=f"d{i}", horas_conducidas=0) for i in range(2)],
-                                         [order(lat=-12.07)])
+            result = VRPTWSolver(road_network=TEST_NETWORK).solve(
+                fleet, [dict(id=f"d{i}", horas_conducidas=0) for i in range(2)],
+                [order(lat=-12.07)])
             results.append(result["routes"][0]["vehiculo_id"])
         self.assertEqual(results, ["clean", "clean"], "Vehicle choice should account for CO2, not input order")
 
@@ -123,10 +154,7 @@ class SolverAudit(unittest.TestCase):
         orders = [order(str(i), lat=lat, lng=lng) for i, (lat, lng) in enumerate([
             (-12.06, -75.21), (-12.07, -75.22), (-12.075, -75.205), (-12.05, -75.215)])]
         depot = (-12.0656, -75.2048)
-        def length(points):
-            return sum(haversine_distance(*a, *b) for a, b in zip(points, points[1:]))
-        from app.services.road_network import get_road_network
-        matrix = get_road_network().matrix([depot] + [(o['lat'], o['lng']) for o in orders])
+        matrix = TEST_NETWORK.matrix([depot] + [(o['lat'], o['lng']) for o in orders])
         optimum = min(sum(matrix[a][b] for a, b in zip((0,) + p, p + (0,)))
                       for p in permutations(range(1, len(orders) + 1))) / 1000
         result = self.solve(orders)
@@ -140,6 +168,12 @@ class SolverAudit(unittest.TestCase):
 
 class APIAudit(unittest.TestCase):
     def setUp(self):
+        self.network_patches = [
+            patch('app.services.vrptw_solver.get_road_network', return_value=TEST_NETWORK),
+            patch('app.api.endpoints.routes.get_road_network', return_value=TEST_NETWORK),
+        ]
+        for network_patch in self.network_patches:
+            network_patch.start()
         Base.metadata.drop_all(engine)
         Base.metadata.create_all(engine)
         install_spatial_index(engine)
@@ -159,6 +193,8 @@ class APIAudit(unittest.TestCase):
 
     def tearDown(self):
         self.client.close()
+        for network_patch in reversed(self.network_patches):
+            network_patch.stop()
 
     def add_order(self, identifier="o1", **changes):
         values = dict(pedido_id=identifier, cliente_id="c1", latitud=-12.0656, longitud=-75.2048,

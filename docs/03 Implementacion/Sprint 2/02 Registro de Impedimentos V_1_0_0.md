@@ -7,8 +7,8 @@
 | **Proyecto** | EcoLogística Huancayo — Optimizador de Rutas Sostenibles para "DistriRápido S.A.C." |
 | **Sprint** | 2 (semanas 4 a 7) |
 | **Versión del documento** | 1.0.0 |
-| **Fecha** | [AAAA-MM-DD] |
-| **Elaborado por** | [Autor] |
+| **Fecha** | 2026-10-09 |
+| **Elaborado por** | Equipo del proyecto |
 | **Equipo** | Manuel Yeferson Parraga Recuay, Sheila Suarez Suarez, David André Guevara Moscoso, Jair Felix Romero |
 | **Docente** | Job Daniel Gamarra Moreno |
 
@@ -26,16 +26,16 @@
 
 | ID | Descripción del impedimento | Fecha de detección | Severidad | Impacto en el sprint | Responsable | Acción de resolución | Estado | Fecha de resolución |
 |---|---|---|---|---|---|---|---|---|
-| IMP-01 | [Descripción] | [AAAA-MM-DD] | [Alta/Media/Baja] | [Impacto] | [Nombre] | [Acción] | [Abierto / En curso / Resuelto] | [AAAA-MM-DD] |
+| IMP-01 | No se dispone de exportación o capturas verificables de Jira | 2026-10-09 | Baja | Limita la evidencia del tablero, no el producto | Equipo del proyecto | Mantener trazabilidad en Git y solicitar acceso al propietario | Abierto externo | No aplica |
 
 ## 3. Resumen
 
 | Total | Abiertos | En curso | Resueltos |
 |---|---|---|---|
-| [ ] | [ ] | [ ] | [ ] |
+| 1 | 1 | 0 | 0 |
 
 ## Historial de Control de Cambios
 
 | Versión | Fecha | Autor | Descripción del cambio |
 |---|---|---|---|
-| 1.0.0 | [AAAA-MM-DD] | [Autor] | Versión inicial del documento |
+| 1.0.0 | 2026-10-09 | Equipo del proyecto | Información completada con evidencia del repositorio |

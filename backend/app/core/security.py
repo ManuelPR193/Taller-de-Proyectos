@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional, Dict
 import jwt
 from jwt import InvalidTokenError
@@ -53,6 +53,10 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 # Structure: { email: {"failed_count": int, "locked_until": datetime | None} }
 failed_login_tracker: Dict[str, Dict] = {}
 
+
+def utc_now():
+    return datetime.now(timezone.utc).replace(tzinfo=None)
+
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
 
@@ -62,9 +66,9 @@ def get_password_hash(password: str) -> str:
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     to_encode = data.copy()
     if expires_delta:
-        expire = datetime.utcnow() + expires_delta
+        expire = utc_now() + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+        expire = utc_now() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
     return encoded_jwt
@@ -76,7 +80,7 @@ def check_login_lockout(email: str) -> bool:
         return False
     locked_until = record.get("locked_until")
     if locked_until:
-        if datetime.utcnow() < locked_until:
+        if utc_now() < locked_until:
             return True
         else:
             # Lock expired, reset
@@ -90,7 +94,7 @@ def record_failed_login(email: str) -> int:
     count = record["failed_count"] + 1
     locked_until = None
     if count >= settings.MAX_FAILED_LOGIN_ATTEMPTS:
-        locked_until = datetime.utcnow() + timedelta(minutes=settings.LOCKOUT_DURATION_MINUTES)
+        locked_until = utc_now() + timedelta(minutes=settings.LOCKOUT_DURATION_MINUTES)
     failed_login_tracker[email] = {"failed_count": count, "locked_until": locked_until}
     return count
 

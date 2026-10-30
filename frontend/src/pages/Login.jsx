@@ -5,11 +5,12 @@ import { Leaf, Lock, Mail, User, ShieldCheck, ShieldAlert, Sparkles, CheckCircle
 
 export const Login = () => {
   const { loginUser } = useAuth();
+  const demoMode = import.meta.env.DEV;
   const [activeTab, setActiveTab] = useState('login'); // 'login' | 'register'
   
   // Login state
-  const [loginEmail, setLoginEmail] = useState('admin@distrirapido.pe');
-  const [loginPassword, setLoginPassword] = useState('admin123');
+  const [loginEmail, setLoginEmail] = useState(demoMode ? 'admin@distrirapido.pe' : '');
+  const [loginPassword, setLoginPassword] = useState(demoMode ? 'admin123' : '');
 
   // Register state
   const [regName, setRegName] = useState('');
@@ -293,7 +294,7 @@ export const Login = () => {
         )}
 
         {/* Quick Demo Access Credentials */}
-        {activeTab === 'login' && (
+        {activeTab === 'login' && demoMode && (
           <div className="pt-4 border-t border-slate-800/80 space-y-2">
             <div className="flex items-center justify-between text-[11px] text-slate-400">
               <span className="font-medium">Accesos Rápidos Demo (1-Click):</span>

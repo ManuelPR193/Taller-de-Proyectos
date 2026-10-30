@@ -58,7 +58,7 @@ export const Reportes = () => {
         <p className="text-slate-300">
           Seleccione hasta 367 días. El reporte utiliza los mismos cálculos que el dashboard.
         </p>
-        <button className="btn-primary" disabled={busy}>
+        <button type="submit" className="btn-primary" disabled={busy}>
           {busy ? 'Generando PDF...' : 'Descargar PDF'}
         </button>
         {error && <p role="alert" className="text-red-200">{error}</p>}

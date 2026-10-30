@@ -33,10 +33,10 @@
 
 ### 1.4. Checklist Previo a la Revisión
 
-- [ ] El ambiente de Staging está desplegado y accesible.
-- [ ] Se cuenta con datos de prueba (vehículos y pedidos de ejemplo) cargados.
-- [ ] El equipo validó que el Definition of Done se cumple en los 6 elementos comprometidos.
-- [ ] Se preparó el Product Increment (`20260925 - 04 Product Increment - Sprint 1.md`) como respaldo documental de la demostración.
+- **Pendiente externo:** el ambiente de staging requiere clúster y secretos.
+- **Cumple localmente:** `seed_data.py` carga vehículos, pedidos y usuarios de demostración.
+- **Cumple parcialmente:** historias funcionales aceptadas; infraestructura pendiente de staging.
+- **Cumple:** el Product Increment está publicado en `20260925 - 04 Product Increment - Sprint 1.md`.
 
 ---
 
@@ -72,8 +72,8 @@
 
 | # | Acción Acordada | Responsable | Para cuándo |
 |---|---|---|---|
-| 1 | | | |
-| 2 | | | |
-| 3 | | | |
+| 1 | Automatizar pruebas funcionales | Equipo backend | Sprint 2 |
+| 2 | Separar aceptación local y staging | Project Manager | Antes del cierre |
+| 3 | Solicitar evidencia de Jira y acta | Project Manager | Antes de la entrega final |
 
-*(El equipo completa esta tabla durante la retrospectiva y la traslada como entrada al Sprint 2 Planning.)*
+Las acciones se consolidaron posteriormente en los documentos de seguimiento.

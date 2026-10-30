@@ -54,7 +54,7 @@ export function DriverAccount({ drivers }) {
           onChange={(event) => setEmail(event.target.value)}
         />
       </label>
-      <button className="btn-primary">Vincular cuenta</button>
+      <button type="submit" className="btn-primary">Vincular cuenta</button>
       {message && <p role="status">{message}</p>}
     </form>
   );

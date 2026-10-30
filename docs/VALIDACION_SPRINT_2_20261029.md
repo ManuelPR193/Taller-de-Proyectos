@@ -10,8 +10,8 @@
 | US-006 — express | Aprobada | Inserción con capacidad, sin duplicados y sin mover paradas entregadas. |
 | US-006 — avería | Aprobada | Al marcar mantenimiento se cancela la ruta afectada y sus entregas pendientes se reasignan a un vehículo disponible. |
 | EN-02 | Aprobado en aplicación | JWT autenticado, RBAC, CORS limitado y DNI cifrado en reposo con AES-256-GCM; migración de datos legados. TLS 1.3 se termina en el Ingress de staging. |
-| EN-06 | Implementado | Workflow con cobertura ≥80%, Bandit, `pip-audit`, `npm audit`, build, benchmark, navegador, imagen y despliegue automático. |
+| EN-06 | Implementado | Workflow con cobertura ≥80%, Bandit, `pip-audit`, `npm audit`, build, benchmark y navegador. El despliegue a staging es manual y condicionado a secretos. |
 
-Resultados locales: 54 pruebas backend, 91% de cobertura, tres pruebas frontend, build correcto, cero vulnerabilidades conocidas en las auditorías completadas y cero hallazgos Bandit medios/altos.
+Resultados reproducidos el 30 de octubre: 54 pruebas backend, 89% de cobertura, tres pruebas frontend, build correcto, cero vulnerabilidades conocidas en las auditorías y cero hallazgos Bandit medios/altos.
 
 La aprobación humana del Pull Request y el despliegue real no se pueden sustituir desde el repositorio; el workflow queda listo para producir esas evidencias.

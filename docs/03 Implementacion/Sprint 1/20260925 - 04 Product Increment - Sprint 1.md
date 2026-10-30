@@ -40,11 +40,11 @@ Este incremento es **funcional y demostrable**: no se trata de código aislado, 
 
 ## 4. Checklist de Cierre del Incremento
 
-- [ ] Cobertura de pruebas unitarias ≥ 80% en los módulos de Flota y Pedidos.
-- [ ] Cero vulnerabilidades críticas reportadas por el análisis estático (SonarQube/CodeQL).
-- [ ] Pull Requests de los 6 elementos aprobados mediante Peer Review.
-- [ ] Despliegue exitoso y verificado en el ambiente de Staging.
-- [ ] Documentación OpenAPI/Swagger actualizada para los endpoints de Flota y Pedidos.
-- [ ] Los 6 elementos cumplen todos sus criterios de aceptación (Gherkin) definidos en el backlog.
+- **Cumple en la suite consolidada:** cobertura backend 89%, superior al 80%.
+- **Cumple con las herramientas ejecutadas:** Bandit sin hallazgos medios/altos y auditorías de dependencias sin vulnerabilidades conocidas.
+- **No existe evidencia:** el repositorio no contiene Pull Requests; el peer review humano queda pendiente.
+- **Pendiente externo:** staging requiere clúster y secretos que no están en el repositorio.
+- **Cumple:** OpenAPI/Swagger se genera desde FastAPI para los endpoints publicados.
+- **Cumple localmente:** los elementos funcionales tienen pruebas; EN-01 y EN-03 requieren aceptación de infraestructura.
 
-*(Este checklist se completa por el equipo al finalizar el sprint, antes de la Revisión del Sprint.)*
+Este cierre diferencia implementación local, evidencia automatizada y aceptación externa.

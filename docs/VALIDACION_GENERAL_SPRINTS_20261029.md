@@ -8,13 +8,13 @@
 
 ## Definition of Done verificable en el repositorio
 
-- Cobertura backend: 91%, superior al 80%.
+- Cobertura backend: 89%, superior al 80% (medición reproducida el 30 de octubre de 2026).
 - Pruebas: 54 backend, 3 frontend y aceptación de navegador.
 - Análisis estático: cero hallazgos Bandit medios/altos.
 - Dependencias: auditorías Python y JavaScript sin vulnerabilidades conocidas en sus últimas ejecuciones completas.
 - Compilación de producción: correcta.
-- Contenedor, HPA, alta disponibilidad PostgreSQL, TLS y despliegue de staging: configurados.
-- Evidencias publicadas por CI: cobertura, JSON de aceptación, capturas y build.
+- Contenedor, HPA, alta disponibilidad PostgreSQL y TLS: configurados como código; ejecución en staging pendiente de secretos.
+- El workflow publica cobertura, JSON de aceptación, capturas y build cuando finaliza correctamente; el cambio del 30 de octubre elimina su dependencia de OSM durante pruebas unitarias.
 
 ## Controles que requieren personas o infraestructura externa
 

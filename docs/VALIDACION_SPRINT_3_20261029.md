@@ -9,7 +9,7 @@ La certificación del entorno productivo sigue su propio control: PT-10 y PT-12 
 ## Ejecuciones finales
 
 - Backend: `venv/Scripts/python -m coverage run --source=app -m unittest discover -s tests` — **54 pruebas aprobadas**.
-- Cobertura: `venv/Scripts/python -m coverage report --fail-under=80` — **91%**, umbral aprobado.
+- Cobertura: `venv/Scripts/python -m coverage report --fail-under=80` — **89%**, umbral aprobado en la repetición del 30 de octubre.
 - Frontend: `npm test` — **3 pruebas aprobadas**.
 - Build: `npm run build` con Vite 8 — correcto y con división por vistas; paquete principal de 63,75 kB gzip.
 - Seguridad Python: Bandit sin hallazgos medios/altos y `pip-audit` sin vulnerabilidades conocidas.
@@ -18,7 +18,7 @@ La certificación del entorno productivo sigue su propio control: PT-10 y PT-12 
 - Algoritmo: 150 pedidos, 15 vehículos, 150 asignados, 0 sin asignar, restricciones válidas, **18,806 s** incluyendo carga del grafo en caché.
 - Navegador 3G: vista esencial en **3,015 s** (umbral 5 s).
 - Accesibilidad: axe WCAG 2 A/AA, **0 violaciones** en la vista auditada.
-- Índice espacial: 100 000 filas y 400 repeticiones; scan **3,18750 s CPU**, R*Tree **0,03125 s CPU**, reducción **99,0%**. El plan confirma `VIRTUAL TABLE INDEX`.
+- Índice espacial: 100 000 filas y 400 repeticiones; scan **2,9375 s CPU**, R*Tree **0,03125 s CPU**, reducción **98,9%**. El plan confirma `VIRTUAL TABLE INDEX`.
 
 ## Matriz de los 12 casos
 

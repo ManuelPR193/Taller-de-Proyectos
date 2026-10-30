@@ -43,7 +43,7 @@
 | **Motor de Optimización** | Google OR-Tools (`pywrapcp`), Haversine Geo-distance |
 | **Mapas y Geoespacial** | Leaflet.js, React-Leaflet, OpenStreetMap |
 | **Generación de Reportes** | ReportLab (PDF Engine) |
-| **Base de Datos** | SQLite (Desarrollo) / PostgreSQL 16 + PostGIS (Producción proyectada) |
+| **Base de Datos** | SQLite + R*Tree (desarrollo) / PostgreSQL 16 con índice compuesto (staging preparado); PostGIS permanece como evolución proyectada |
 | **Seguridad & Auth** | OAuth2 con Tokens JWT, Passlib (Bcrypt hashing) |
 
 ---
@@ -125,6 +125,8 @@ npm run dev
 
 El proyecto cuenta con una sólida arquitectura documental desarrollada durante las distintas fases del ciclo de vida software:
 
+> **Alcance verificable:** el tráfico mostrado corresponde a observaciones del operador con vigencia de 30 minutos, no a un proveedor de tráfico en tiempo real. Las métricas ambientales son estimaciones calculadas desde rutas y factores configurados. Staging, Jira, pruebas con conductores y firma docente requieren evidencia externa.
+
 ### 📋 Fase 01: Inicio del Proyecto
 - [01. Selección del enfoque del proyecto](docs/01%20Inicio/01.%20Selecci%C3%B3n%20del%20enfoque%20del%20proyecto%20V_1_0_0.md)
 - [02. Acta de constitución](docs/01%20Inicio/02.%20Acta%20de%20constituci%C3%B3n%20V_1_0_0.md)
@@ -146,6 +148,11 @@ El proyecto cuenta con una sólida arquitectura documental desarrollada durante 
 - [03. Registro de riesgos](docs/02%20Planificaci%C3%B3n/03%20Registro%20de%20riesgos%20V_1_0_0.md)
 - [04. Presupuesto del proyecto](docs/02%20Planificaci%C3%B3n/04%20Presupuesto%20del%20proyecto%20V_1_0_0.md)
 
+### Seguimiento y cierre
+
+- [Seguimiento y Control](docs/05%20Seguimiento%20y%20Control/README.md)
+- [Cierre](docs/06%20Cierre/README.md)
+
 ---
 
 ## 📜 Historial de Control de Cambios
@@ -156,6 +163,11 @@ El proyecto cuenta con una sólida arquitectura documental desarrollada durante 
 - [Validación del Sprint 1](docs/VALIDACION_SPRINT_1_20261029.md)
 - [Validación del Sprint 2](docs/VALIDACION_SPRINT_2_20261029.md)
 - [Validación del Sprint 3](docs/VALIDACION_SPRINT_3_20261029.md)
+- [Revisión del Sprint 3](docs/03%20Implementacion/Sprint%203/06%20Revision%20del%20Sprint%20V_1_0_0.md)
+- [Retrospectiva del Sprint 3](docs/03%20Implementacion/Sprint%203/07%20Retrospectiva%20del%20Sprint%20V_1_0_0.md)
+- [Calidad de código del Sprint 3](docs/03%20Implementacion/Sprint%203/03%20Calidad%20de%20c%C3%B3digo%20V_1_0_0.md)
+- [Seguridad OWASP del Sprint 3](docs/03%20Implementacion/Sprint%203/04%20OWASP%20V_1_0_0.md)
+- [Accesibilidad WCAG del Sprint 3](docs/03%20Implementacion/Sprint%203/05%20WCAG%20V_1_0_0.md)
 
 | Fecha | Versión | Descripción | Documentos / Módulos Afectados |
 |---|---|---|---|

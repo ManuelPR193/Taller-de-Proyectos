@@ -1,14 +1,17 @@
-"""Additive SQLite migration: synchronized R*Tree for viewport order queries."""
-from sqlalchemy import text
+"""Additive spatial indexes for SQLite development and PostgreSQL staging."""
 
 
 def install_spatial_index(engine):
-    if engine.dialect.name != 'sqlite':
-        return
     with engine.begin() as connection:
         connection.exec_driver_sql('CREATE INDEX IF NOT EXISTS ix_rutas_fecha ON rutas(fecha)')
         connection.exec_driver_sql('CREATE INDEX IF NOT EXISTS ix_detalles_ruta ON ruta_detalle(ruta_id)')
         connection.exec_driver_sql('CREATE INDEX IF NOT EXISTS ix_pedidos_estado ON pedidos(estado)')
+        connection.exec_driver_sql('CREATE INDEX IF NOT EXISTS ix_pedidos_lat_lng ON pedidos(latitud, longitud)')
+        if engine.dialect.name != 'sqlite':
+            # PostgreSQL uses the portable bounding-box query in orders.py. The
+            # composite B-tree keeps that query indexed without requiring a
+            # PostGIS-specific model or migration.
+            return
         connection.exec_driver_sql('CREATE VIRTUAL TABLE IF NOT EXISTS pedidos_geo USING rtree(id, min_lat, max_lat, min_lng, max_lng)')
         for event, body in [
             ('INSERT', 'INSERT INTO pedidos_geo VALUES (new.rowid,new.latitud,new.latitud,new.longitud,new.longitud);'),

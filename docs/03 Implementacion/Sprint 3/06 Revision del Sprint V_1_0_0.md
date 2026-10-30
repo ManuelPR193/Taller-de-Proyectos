@@ -7,8 +7,8 @@
 | **Proyecto** | EcoLogística Huancayo — Optimizador de Rutas Sostenibles para "DistriRápido S.A.C." |
 | **Sprint** | 3 (semanas 8 a 11) |
 | **Versión del documento** | 1.0.0 |
-| **Fecha** | [2026-10-24] |
-| **Elaborado por** | [Manuel Parraga] |
+| **Fecha** | 2026-10-30 |
+| **Elaborado por** | Equipo del proyecto |
 | **Equipo** | Manuel Yeferson Parraga Recuay, Sheila Suarez Suarez, David André Guevara Moscoso, Jair Felix Romero |
 | **Docente** | Job Daniel Gamarra Moreno |
 
@@ -24,8 +24,8 @@ Presentar al docente y a los interesados el incremento construido en el Sprint 3
 
 | Nombre | Rol |
 |---|---|
-| Job Daniel Gamarra Moreno | Docente / Evaluador |
-| [Nombre] | [Rol] |
+| Job Daniel Gamarra Moreno | Docente / Evaluador; validación externa pendiente |
+| Equipo del proyecto | Revisión técnica interna |
 
 ## 3. Agenda
 
@@ -41,34 +41,34 @@ Presentar al docente y a los interesados el incremento construido en el Sprint 3
 
 | ID | Elemento | Tipo | Story Points | Estado |
 |---|---|---|---|---|
-| US-007 | Visualizar la ruta asignada en el mapa (modo conductor) | Historia | 5 | [Hecho / En curso / No completado] |
-| US-008 | Visualizar el nivel de congestión por tramo | Historia | [SP] | [Hecho / En curso / No completado] |
-| US-009 | Consultar el dashboard de sostenibilidad | Historia | 8 | [Hecho / En curso / No completado] |
-| US-010 | Descargar el reporte de sostenibilidad en PDF | Historia | [SP] | [Hecho / En curso / No completado] |
-| EN-05 | Optimizar consultas SQL con índices geoespaciales | Enabler | [SP] | [Hecho / En curso / No completado] |
+| US-007 | Visualizar la ruta asignada en el mapa (modo conductor) | Historia | 5 | Hecho; DoD técnico aprobado |
+| US-008 | Visualizar el nivel de congestión por tramo | Historia | 5 | Hecho; DoD técnico aprobado |
+| US-009 | Consultar el dashboard de sostenibilidad | Historia | 8 | Hecho; DoD técnico aprobado |
+| US-010 | Descargar el reporte de sostenibilidad en PDF | Historia | 5 | Hecho; DoD técnico aprobado |
+| EN-05 | Optimizar consultas SQL con índices geoespaciales | Enabler | 5 | Hecho local; repetir en PostgreSQL |
 
 ## 5. Elementos No Completados
 
 | ID | Motivo | Decisión (reprogramar / descartar) |
 |---|---|---|
-| | | |
+| Ninguno técnico | Staging, PostgreSQL y prueba con usuarios son validaciones externas | Reprogramar validación externa |
 
 ## 6. Retroalimentación Recibida
 
 | Interesado | Comentario | Acción derivada |
 |---|---|---|
-| | | |
+| Revisión técnica interna | Se demostró mapa, congestión, dashboard, estado vacío y PDF; 54 pruebas backend, 3 frontend y 9 casos de navegador aprobaron | Publicar resultados de CI y repetir la demostración con docente y stakeholders |
 
 ## 7. Ajustes al Backlog
 
-- [Ajuste 1]
+- Corregir CI no determinista y dejar el despliegue bajo ejecución manual.
 
 ## 8. Acuerdos
 
-- [Acuerdo 1]
+- No atribuir PR, Jira, staging ni usuarios reales sin evidencia verificable.
 
 ## Historial de Control de Cambios
 
 | Versión | Fecha | Autor | Descripción del cambio |
 |---|---|---|---|
-| 1.0.0 | [AAAA-MM-DD] | [Autor] | Versión inicial del documento |
+| 1.0.0 | 2026-10-30 | Equipo del proyecto | Información completada con evidencia del repositorio |

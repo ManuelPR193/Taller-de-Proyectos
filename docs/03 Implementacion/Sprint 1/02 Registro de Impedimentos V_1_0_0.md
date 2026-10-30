@@ -7,8 +7,8 @@
 | **Proyecto** | EcoLogística Huancayo — Optimizador de Rutas Sostenibles para "DistriRápido S.A.C." |
 | **Sprint** | 1 (semanas 1 a 3) |
 | **Versión del documento** | 1.0.0 |
-| **Fecha** | [AAAA-MM-DD] |
-| **Elaborado por** | [Autor] |
+| **Fecha** | 2026-09-25 |
+| **Elaborado por** | Equipo del proyecto |
 | **Equipo** | Manuel Yeferson Parraga Recuay, Sheila Suarez Suarez, David André Guevara Moscoso, Jair Felix Romero |
 | **Docente** | Job Daniel Gamarra Moreno |
 
@@ -26,16 +26,16 @@
 
 | ID | Descripción del impedimento | Fecha de detección | Severidad | Impacto en el sprint | Responsable | Acción de resolución | Estado | Fecha de resolución |
 |---|---|---|---|---|---|---|---|---|
-| IMP-01 | [Descripción] | [AAAA-MM-DD] | [Alta/Media/Baja] | [Impacto] | [Nombre] | [Acción] | [Abierto / En curso / Resuelto] | [AAAA-MM-DD] |
+| IMP-01 | No existe un entorno externo para probar autoescalamiento y failover | 2026-09-25 | Alta | EN-01 y EN-03 no pueden cerrarse con evidencia | Equipo del proyecto | Conservar configuración y programar prueba en staging | Abierto externo | No aplica |
 
 ## 3. Resumen
 
 | Total | Abiertos | En curso | Resueltos |
 |---|---|---|---|
-| [ ] | [ ] | [ ] | [ ] |
+| 1 | 1 | 0 | 0 |
 
 ## Historial de Control de Cambios
 
 | Versión | Fecha | Autor | Descripción del cambio |
 |---|---|---|---|
-| 1.0.0 | [AAAA-MM-DD] | [Autor] | Versión inicial del documento |
+| 1.0.0 | 2026-09-25 | Equipo del proyecto | Información completada con evidencia del repositorio |

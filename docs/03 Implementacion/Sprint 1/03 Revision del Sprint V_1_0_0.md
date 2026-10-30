@@ -7,8 +7,8 @@
 | **Proyecto** | EcoLogística Huancayo — Optimizador de Rutas Sostenibles para "DistriRápido S.A.C." |
 | **Sprint** | 1 (semanas 1 a 3) |
 | **Versión del documento** | 1.0.0 |
-| **Fecha** | [AAAA-MM-DD] |
-| **Elaborado por** | [Autor] |
+| **Fecha** | 2026-09-25 |
+| **Elaborado por** | Equipo del proyecto |
 | **Equipo** | Manuel Yeferson Parraga Recuay, Sheila Suarez Suarez, David André Guevara Moscoso, Jair Felix Romero |
 | **Docente** | Job Daniel Gamarra Moreno |
 
@@ -24,8 +24,8 @@ Presentar al docente y a los interesados el incremento construido en el Sprint 1
 
 | Nombre | Rol |
 |---|---|
-| Job Daniel Gamarra Moreno | Docente / Evaluador |
-| [Nombre] | [Rol] |
+| Job Daniel Gamarra Moreno | Docente / Evaluador; validación externa pendiente |
+| Equipo del proyecto | Revisión técnica interna |
 
 ## 3. Agenda
 
@@ -41,35 +41,35 @@ Presentar al docente y a los interesados el incremento construido en el Sprint 1
 
 | ID | Elemento | Tipo | Story Points | Estado |
 |---|---|---|---|---|
-| EN-01 | Auto-escalamiento del backend | Enabler | 8 | [Hecho / En curso / No completado] |
-| EN-03 | Failover de base de datos | Enabler | 5 | [Hecho / En curso / No completado] |
-| US-001 | Registrar vehículo de la flota | Historia | 3 | [Hecho / En curso / No completado] |
-| US-002 | Actualizar datos de un vehículo | Historia | 3 | [Hecho / En curso / No completado] |
-| US-003 | Registrar pedido con punto de referencia | Historia | 5 | [Hecho / En curso / No completado] |
-| US-004 | Consultar estado de un pedido | Historia | 3 | [Hecho / En curso / No completado] |
+| EN-01 | Auto-escalamiento del backend | Enabler | 8 | No completado: requiere staging |
+| EN-03 | Failover de base de datos | Enabler | 5 | No completado: requiere staging |
+| US-001 | Registrar vehículo de la flota | Historia | 3 | Hecho |
+| US-002 | Actualizar datos de un vehículo | Historia | 3 | Hecho |
+| US-003 | Registrar pedido con punto de referencia | Historia | 5 | Hecho |
+| US-004 | Consultar estado de un pedido | Historia | 3 | Hecho |
 
 ## 5. Elementos No Completados
 
 | ID | Motivo | Decisión (reprogramar / descartar) |
 |---|---|---|
-| | | |
+| EN-01 / EN-03 | Falta entorno externo para medir autoescalamiento y failover | Reprogramar validación en staging |
 
 ## 6. Retroalimentación Recibida
 
 | Interesado | Comentario | Acción derivada |
 |---|---|---|
-| | | |
+| Revisión técnica interna | CRUD y reglas funcionales aprobadas; falta validación de infraestructura | Mantener EN-01 y EN-03 abiertos |
 
 ## 7. Ajustes al Backlog
 
-- [Ajuste 1]
+- Priorizar una prueba reproducible de infraestructura cuando exista staging.
 
 ## 8. Acuerdos
 
-- [Acuerdo 1]
+- No declarar EN-01 ni EN-03 como terminados sin evidencia externa.
 
 ## Historial de Control de Cambios
 
 | Versión | Fecha | Autor | Descripción del cambio |
 |---|---|---|---|
-| 1.0.0 | [AAAA-MM-DD] | [Autor] | Versión inicial del documento |
+| 1.0.0 | 2026-09-25 | Equipo del proyecto | Información completada con evidencia del repositorio |

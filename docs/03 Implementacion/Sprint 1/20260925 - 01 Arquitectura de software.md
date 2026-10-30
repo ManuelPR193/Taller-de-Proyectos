@@ -2,6 +2,8 @@
 
 # Arquitectura de Software
 
+> **Estado actualizado:** PostgreSQL + PostGIS y Redis describen la arquitectura objetivo. El incremento local validado usa SQLite + R*Tree y caché en proceso; el staging preparado usa PostgreSQL HA. No se afirma un despliegue PostGIS/Redis sin evidencia de infraestructura.
+
 **Proyecto:** EcoLogística Huancayo — Optimizador de Rutas Sostenibles para "DistriRápido S.A.C."
 **Fecha:** 25 de septiembre de 2026 | **Sprint:** 1
 **Elaborado por:** Manuel Yeferson Parraga Recuay, Sheila Suarez Suarez, David André Guevara Moscoso, Jair Felix Romero

@@ -6,7 +6,7 @@
 **Versión:** 1.0.0 | **Fecha:** 28 de agosto de 2026
 **Herramienta:** Atlassian Jira Software (proyecto tipo Scrum)
 
-> ⚠️ **Nota de uso:** este documento es la plantilla lista para completar con las capturas reales de tu proyecto en Jira. Reemplaza cada bloque `📸 [Insertar captura...]` por la imagen correspondiente (`![Descripción](ruta/a/la/imagen.png)`), recortada exclusivamente al panel del elemento a demostrar, conforme a la política estricta de capturas de la consigna (sin escritorio, barra de tareas ni pestañas del navegador).
+> **Estado de evidencia:** la configuración se documenta a continuación, pero las capturas reales pertenecen a una cuenta externa de Jira y no están disponibles en el repositorio. No se incluyen imágenes simuladas. El propietario de la cuenta debe exportar Roadmap, Backlog, Sprint, Tablero y Releases antes de la aceptación académica.
 
 ---
 
@@ -33,7 +33,7 @@ Mapeo de las 6 Épicas (EP-01 a EP-06) y los 6 Enablers en la línea de tiempo d
 - Iteración 3 (semanas 8-11): EP-04, EP-05 (mapas y sostenibilidad) y EN-02, EN-05.
 - Iteración 4 (semanas 12-14): EP-06, EN-04 y cierre/pruebas.
 
-📸 *[Insertar aquí la captura del panel "Roadmap" de Jira, mostrando las barras de las Épicas distribuidas en las 4 iteraciones]*
+**Evidencia externa pendiente:** exportación del panel Roadmap de Jira.
 
 ---
 
@@ -54,7 +54,7 @@ El backlog se ordenó de mayor a menor valor de negocio y riesgo técnico. Estim
 | 9 | US-009 Dashboard de indicadores | Historia | 8 |
 | 10 | EN-02 Cifrado de datos sensibles | Enabler | 3 |
 
-📸 *[Insertar aquí la captura del panel "Backlog" de Jira, mostrando la vista general con los Story Points estimados y los componentes/etiquetas asignados a cada elemento]*
+**Evidencia externa pendiente:** exportación del Backlog con Story Points y etiquetas.
 
 ---
 
@@ -65,7 +65,7 @@ El backlog se ordenó de mayor a menor valor de negocio y riesgo técnico. Estim
 
 **Ítems seleccionados para el Sprint 1** (duración: 2 semanas): EN-01, EN-03, US-001, US-002, US-003, US-004.
 
-📸 *[Insertar aquí la captura del panel "Sprint Planning" de Jira, mostrando la cabecera con el Sprint Goal redactado y los ítems seleccionados para el Sprint 1]*
+**Evidencia externa pendiente:** exportación de Sprint Planning y Sprint Goal.
 
 ---
 
@@ -73,7 +73,7 @@ El backlog se ordenó de mayor a menor valor de negocio y riesgo técnico. Estim
 
 Flujo de trabajo configurado con las columnas: **To Do → In Progress → In Review / QA → Done**, reflejando el avance de las tarjetas del Sprint 1 en curso.
 
-📸 *[Insertar aquí la captura del "Tablero Scrum" (Active Sprint) de Jira, mostrando las tarjetas distribuidas en las cuatro columnas del flujo de trabajo]*
+**Evidencia externa pendiente:** exportación del Tablero Scrum activo.
 
 ---
 
@@ -81,4 +81,4 @@ Flujo de trabajo configurado con las columnas: **To Do → In Progress → In Re
 
 Versión oficial creada en Jira: **`v1.0.0-MVP`**, asociada a las Historias y Enablers priorizados para el primer incremento funcional del proyecto (correspondiente al alcance del MVP: RF-001 a RF-007, según el Acta de Constitución).
 
-📸 *[Insertar aquí la captura del módulo "Releases" de Jira, mostrando la versión `v1.0.0-MVP` creada y el listado de Historias/Enablers asociados]*
+**Evidencia externa pendiente:** exportación del módulo Releases para `v1.0.0-MVP`.

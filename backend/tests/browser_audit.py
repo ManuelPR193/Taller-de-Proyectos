@@ -11,6 +11,8 @@ with sync_playwright() as p:
     page.on("requestfailed", lambda request: output["failed_requests"].append({"url": request.url, "error": request.failure}))
     page.goto("http://127.0.0.1:8000", wait_until="domcontentloaded")
     assert page.locator('input[type="password"]').count() == 1
+    page.locator('input[type="email"]').fill('admin@distrirapido.pe')
+    page.locator('input[type="password"]').fill('admin123')
     page.locator('form').first.locator('button[type="submit"]').click()
     page.wait_for_selector('main')
     for route in ("/", "/rutas", "/vehiculos", "/conductores", "/pedidos", "/modo-conductor", "/portal-auditor", "/portal-cliente", "/reportes"):

@@ -9,6 +9,7 @@ yarn-error.log*
 dist/
 frontend/dist/
 build/
+.scannerwork/
 
 # Python
 __pycache__/

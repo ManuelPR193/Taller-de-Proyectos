@@ -51,7 +51,7 @@ export const PortalCliente = () => {
   };
 
   useEffect(() => {
-    loadData();
+    void loadData();
   }, []);
 
   const handleCreateOrder = async (e) => {
@@ -96,7 +96,7 @@ export const PortalCliente = () => {
 
       setSuccessMsg(`¡Pedido registado con éxito! Código de seguimiento: #${newOrder.pedido_id.slice(0, 8)}`);
       setShowNewOrderModal(false);
-      loadData();
+      void loadData();
     } catch (err) {
       setError(err.message || "Error registrando pedido");
     }

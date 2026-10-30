@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List, Optional
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 from app.db.session import get_db
 from app.models.domain import Ruta, RutaDetalle, Pedido, Vehiculo, Conductor, CuentaConductor, CuentaCliente, RutaBase, TraficoTramo, Usuario
 from app.schemas.schemas import RutaOut, RouteGenerationRequest, DeliveryConfirmationRequest, ExpressOrderInsertRequest
@@ -13,6 +13,10 @@ from pydantic import BaseModel, Field
 from typing import Literal
 
 router = APIRouter()
+
+
+def utc_now():
+    return datetime.now(timezone.utc).replace(tzinfo=None)
 
 
 def accessible(query, user, db):
@@ -39,7 +43,7 @@ def traffic(ruta_id: str, db: Session = Depends(get_db), user=Depends(current_us
     if not route:
         raise HTTPException(404, 'Ruta no encontrada')
     fresh = {t.tramo: t for t in db.query(TraficoTramo).filter(
-        TraficoTramo.ruta_id == ruta_id, TraficoTramo.observado_en >= datetime.utcnow()-timedelta(minutes=30)).all()}
+        TraficoTramo.ruta_id == ruta_id, TraficoTramo.observado_en >= utc_now()-timedelta(minutes=30)).all()}
     return [dict(tramo=i, nivel=fresh[i].nivel if i in fresh else 'SIN_DATOS',
                  fuente=fresh[i].fuente if i in fresh else None,
                  observado_en=fresh[i].observado_en if i in fresh else None)
@@ -54,7 +58,7 @@ def update_traffic(ruta_id: str, tramo: int, payload: TrafficInput, db: Session 
     if not route or not 0 <= tramo <= len(route.detalles):
         raise HTTPException(404, 'Tramo no encontrado')
     value = db.get(TraficoTramo, (ruta_id, tramo)) or TraficoTramo(ruta_id=ruta_id, tramo=tramo)
-    value.nivel, value.fuente, value.observado_en = payload.nivel, payload.fuente.strip(), datetime.utcnow()
+    value.nivel, value.fuente, value.observado_en = payload.nivel, payload.fuente.strip(), utc_now()
     if not value.fuente:
         raise HTTPException(422, 'Indique la fuente')
     db.add(value)

@@ -4,7 +4,9 @@
 
 **Proyecto:** EcoLogística Huancayo — Optimizador de Rutas Sostenibles para "DistriRápido S.A.C."
 **Fecha:** 25 de septiembre de 2026 | **Sprint:** 1
-**Motor:** PostgreSQL 16 + extensión PostGIS
+**Motor objetivo:** PostgreSQL 16 + extensión PostGIS
+
+**Estado implementado:** SQLite + R*Tree para desarrollo y PostgreSQL con índice compuesto para la consulta portable de viewport. El esquema PostGIS siguiente se conserva como diseño objetivo pendiente de migración y prueba en staging.
 
 ---
 

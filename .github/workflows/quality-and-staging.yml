@@ -4,6 +4,17 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
+    inputs:
+      deploy_staging:
+        description: Deploy the validated commit to the configured staging cluster
+        required: false
+        default: false
+        type: boolean
+
+concurrency:
+  group: quality-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -12,6 +23,7 @@ permissions:
 jobs:
   quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -24,7 +36,7 @@ jobs:
       - name: Backend tests and coverage gate
         working-directory: backend
         run: |
-          coverage run --source=app -m unittest discover -s tests
+          coverage run --source=app -m unittest discover -s tests -v
           coverage report --fail-under=80
           coverage xml
       - name: Static security and dependency audit
@@ -65,9 +77,10 @@ jobs:
             frontend/dist/
 
   deploy-staging:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'workflow_dispatch' && inputs.deploy_staging == true
     needs: quality
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     environment: staging
     steps:
       - uses: actions/checkout@v4

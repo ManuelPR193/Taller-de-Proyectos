@@ -38,6 +38,8 @@ route_data = [{
 
 def login(page):
     page.goto(BASE, wait_until='domcontentloaded')
+    page.locator('input[type="email"]').fill('admin@distrirapido.pe')
+    page.locator('input[type="password"]').fill('admin123')
     page.locator('form').first.locator('button[type="submit"]').click()
     page.wait_for_selector('main')
 

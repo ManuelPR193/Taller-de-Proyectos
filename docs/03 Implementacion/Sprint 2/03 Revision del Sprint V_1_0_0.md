@@ -7,8 +7,8 @@
 | **Proyecto** | EcoLogística Huancayo — Optimizador de Rutas Sostenibles para "DistriRápido S.A.C." |
 | **Sprint** | 2 (semanas 4 a 7) |
 | **Versión del documento** | 1.0.0 |
-| **Fecha** | [AAAA-MM-DD] |
-| **Elaborado por** | [Autor] |
+| **Fecha** | 2026-10-09 |
+| **Elaborado por** | Equipo del proyecto |
 | **Equipo** | Manuel Yeferson Parraga Recuay, Sheila Suarez Suarez, David André Guevara Moscoso, Jair Felix Romero |
 | **Docente** | Job Daniel Gamarra Moreno |
 
@@ -24,8 +24,8 @@ Presentar al docente y a los interesados el incremento construido en el Sprint 2
 
 | Nombre | Rol |
 |---|---|
-| Job Daniel Gamarra Moreno | Docente / Evaluador |
-| [Nombre] | [Rol] |
+| Job Daniel Gamarra Moreno | Docente / Evaluador; validación externa pendiente |
+| Equipo del proyecto | Revisión técnica interna |
 
 ## 3. Agenda
 
@@ -41,33 +41,33 @@ Presentar al docente y a los interesados el incremento construido en el Sprint 2
 
 | ID | Elemento | Tipo | Story Points | Estado |
 |---|---|---|---|---|
-| EN-02 | Login y control de acceso por rol (RBAC) | Enabler | [SP] | [Hecho / En curso / No completado] |
-| US-011 | Agregar conductor | Historia | [SP] | [Hecho / En curso / No completado] |
-| US-003 | Agregar pedido desde la pantalla de operación | Historia | [SP] | [Hecho / En curso / No completado] |
-| — | Pantalla de inicio por rol (Administrador, Operador, Conductor, Cliente, Auditor) | Historia | [SP] | [Hecho / En curso / No completado] |
+| EN-02 | Login y control de acceso por rol (RBAC) | Enabler | 5 | Hecho |
+| US-011 | Agregar conductor | Historia | 3 | Hecho |
+| US-003 | Agregar pedido desde la pantalla de operación | Historia | 5 | Hecho |
+| — | Pantalla de inicio por rol (Administrador, Operador, Conductor, Cliente, Auditor) | Historia | 5 | Hecho |
 
 ## 5. Elementos No Completados
 
 | ID | Motivo | Decisión (reprogramar / descartar) |
 |---|---|---|
-| | | |
+| Ninguno | El alcance técnico comprometido está implementado | No aplica |
 
 ## 6. Retroalimentación Recibida
 
 | Interesado | Comentario | Acción derivada |
 |---|---|---|
-| | | |
+| Revisión técnica interna | Los roles y formularios funcionan; Jira no tiene evidencia exportada | Solicitar evidencia al propietario de Jira |
 
 ## 7. Ajustes al Backlog
 
-- [Ajuste 1]
+- Agregar pruebas de aislamiento entre roles y preparar el Sprint 3.
 
 ## 8. Acuerdos
 
-- [Acuerdo 1]
+- Conservar evidencia técnica reproducible dentro del repositorio.
 
 ## Historial de Control de Cambios
 
 | Versión | Fecha | Autor | Descripción del cambio |
 |---|---|---|---|
-| 1.0.0 | [AAAA-MM-DD] | [Autor] | Versión inicial del documento |
+| 1.0.0 | 2026-10-09 | Equipo del proyecto | Información completada con evidencia del repositorio |

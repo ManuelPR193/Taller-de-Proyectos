@@ -18,7 +18,7 @@ function TrafficEditor({route, segment, refresh}) {
   return <form className="flex flex-wrap gap-2 mt-2" onSubmit={async e=>{e.preventDefault();setBusy(true);setError('');try{await api.setTraffic(route,segment,level,source);refresh();}catch(e){setError(e.message);}finally{setBusy(false);}}}>
     <label className="text-sm">Nivel<select className="form-input" value={level} onChange={e=>setLevel(e.target.value)}>{['BAJO','MEDIO','ALTO'].map(x=><option key={x}>{x}</option>)}</select></label>
     <label className="text-sm flex-1">Fuente de la observación<input className="form-input" value={source} onChange={e=>setSource(e.target.value)} minLength={3} maxLength={120} required placeholder="Ej. inspección del operador" /></label>
-    <button className="btn-secondary self-end" disabled={busy}>Guardar observación</button>{error&&<p role="alert">{error}</p>}
+    <button type="submit" className="btn-secondary self-end" disabled={busy}>Guardar observación</button>{error&&<p role="alert">{error}</p>}
   </form>;
 }
 export const InteractiveMap = ({routes=[], depot={lat:-12.0656,lng:-75.2048}}) => {
@@ -32,18 +32,18 @@ export const InteractiveMap = ({routes=[], depot={lat:-12.0656,lng:-75.2048}}) =
     Promise.all(routes.filter(r=>r.detalles?.length).map(async r=>{
       try {const segments=await getRoadSegments(routePoints(r,depot),controller.signal);if(active)setPaths(p=>({...p,[r.ruta_id]:segments}));}
       catch {if(active)setFailed(true);}
-    })).finally(()=>clearTimeout(timeout));
+    })).catch(()=>{if(active)setFailed(true);}).finally(()=>clearTimeout(timeout));
     return ()=>{active=false;controller.abort();clearTimeout(timeout);};
   },[key,revision]);
   useEffect(()=>{
     let active=true;
     const refresh=()=>Promise.all(routes.map(async r=>{try{const t=await api.getTraffic(r.ruta_id);if(active)setTraffic(p=>({...p,[r.ruta_id]:t}));}catch{if(active)setTraffic(p=>({...p,[r.ruta_id]:[]}));}}));
-    refresh();const timer=setInterval(refresh,60000);return()=>{active=false;clearInterval(timer);};
+    void refresh();const timer=setInterval(()=>{void refresh();},60000);return()=>{active=false;clearInterval(timer);};
   },[key,revision]);
   const stops=routes.flatMap(r=>r.detalles||[]);
   return <div className="space-y-4">
     {(failed||tileError)&&<div role="alert" className="p-4 rounded-lg bg-slate-800">Servicio de mapas no disponible. Puede continuar con la lista de paradas.
-      <button className="btn-secondary ml-2" onClick={()=>{setTileError(false);setRevision(v=>v+1);}}>Reintentar mapa</button></div>}
+      <button type="button" className="btn-secondary ml-2" onClick={()=>{setTileError(false);setRevision(v=>v+1);}}>Reintentar mapa</button></div>}
     <div className="h-[400px] rounded-xl overflow-hidden" aria-label="Mapa de rutas y congestión">
       <MapContainer key={revision} center={[depot.lat,depot.lng]} zoom={13} className="h-full w-full">
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution='&copy; OpenStreetMap' eventHandlers={{tileerror:()=>setTileError(true)}} />

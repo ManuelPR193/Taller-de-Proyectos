@@ -2,7 +2,7 @@ import React, { lazy, Suspense, useEffect, useState } from 'react';
 
 import { api, today } from '../services/api';
 
-const Map = lazy(() =>
+const RouteMap = lazy(() =>
   import('../components/InteractiveMap').then((module) => ({
     default: module.InteractiveMap,
   })),
@@ -121,7 +121,7 @@ export const ModoConductor = () => {
             ))}
           </ol>
           <Suspense fallback={<p>Cargando mapa; la lista de paradas ya está disponible.</p>}>
-            <Map routes={[selectedRoute]} />
+            <RouteMap routes={[selectedRoute]} />
           </Suspense>
         </>
       )}
