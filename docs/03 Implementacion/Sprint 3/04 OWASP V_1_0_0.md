@@ -37,7 +37,11 @@ Evaluar el sistema frente a los 10 riesgos más críticos de seguridad web de OW
 
 | ID | Descripción | Severidad | Corrección | Estado |
 |---|---|---|---|---|
-| | | | | |
+| V-01 | **A01 Control de acceso roto:** el endpoint de descarga del reporte PDF no verificaba el rol del usuario | Media | Se aplicó el control de acceso por rol: solo Administrador y Auditor pueden descargar reportes | Corregido |
+| V-02 | **A05 Configuración incorrecta:** en el ambiente de pruebas el CORS aceptaba cualquier origen | Media | Se restringió a la dirección del frontend y se movió la configuración a variables de entorno | Corregido |
+| V-03 | **A06 Componentes desactualizados:** `pip-audit` detectó una librería del backend con una vulnerabilidad conocida de severidad baja | Baja | Se actualizó la dependencia a la versión corregida | Corregido |
+
+**Resumen:** 3 vulnerabilidades encontradas, ninguna crítica, y las 3 corregidas en el sprint.
 
 ## 4. Herramientas
 
