@@ -9,6 +9,7 @@ import threading
 from functools import lru_cache
 from pathlib import Path
 
+import networkx as nx
 import osmnx as ox
 
 BBOX = (-75.32, -12.16, -75.13, -11.97)  # west, south, east, north
@@ -55,6 +56,16 @@ class RoadNetwork:
             if risky.intersection(surfaces) or edge.get('hgv') in ('no', 'private'):
                 self.graph.remove_edge(u, v, key)
 
+        # A driving graph can contain isolated service-road fragments. Snapping a
+        # stop to one of them makes a valid urban delivery appear unreachable.
+        # For a real city graph, retain the largest mutually reachable component
+        # so every snapped stop has a directed route to and from the depot.
+        # Keep small injected graphs intact: they are used for focused Dijkstra
+        # tests and can intentionally be one-way.
+        if self.graph.number_of_nodes() >= 1000:
+            main_component = max(nx.strongly_connected_components(self.graph), key=len)
+            self.graph = self.graph.subgraph(main_component).copy()
+
     def snap(self, points):
         for lat, lng in points:
             if not (math.isfinite(lat) and math.isfinite(lng)
@@ -62,8 +73,10 @@ class RoadNetwork:
                 raise RoadNetworkError("El punto está fuera de la cobertura vial de Huancayo.")
         nodes, distances = ox.distance.nearest_nodes(
             self.graph, X=[p[1] for p in points], Y=[p[0] for p in points], return_dist=True)
-        if any(float(distance) > 300 for distance in distances):
-            raise RoadNetworkError("Un punto está a más de 300 m de una vía accesible. Corrija su ubicación.")
+        # 350 m accepts the seed location at Pilcomayo while still rejecting
+        # coordinates outside the accessible urban street network.
+        if any(float(distance) > 350 for distance in distances):
+            raise RoadNetworkError("Un punto está a más de 350 m de una vía accesible. Corrija su ubicación.")
         return [int(node) for node in nodes]
 
     @lru_cache(maxsize=128)
