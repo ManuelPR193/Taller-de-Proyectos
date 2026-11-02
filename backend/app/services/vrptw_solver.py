@@ -123,7 +123,7 @@ class VRPTWSolver:
         speed_m_per_sec = 7.0
         def time_callback(from_index, to_index):
             from_node = manager.IndexToNode(from_index)
-            to_node = manager.IndexToNode(to_node)
+            to_node = manager.IndexToNode(to_index)
             dist_m = data["distance_matrix"][from_node][to_node]
             travel_time_sec = dist_m / speed_m_per_sec
             service_time_sec = 300 if to_node != 0 else 0 # 5 min service time per delivery
