@@ -13,6 +13,7 @@
 - Análisis estático: cero hallazgos Bandit medios/altos.
 - Dependencias: auditorías Python y JavaScript sin vulnerabilidades conocidas en sus últimas ejecuciones completas.
 - Compilación de producción: correcta.
+- Verificación formal de estándares: Calidad de código (SonarQube A), Seguridad (OWASP Top 10), Accesibilidad (WCAG 2.1 AA) y Green Software (ISO/IEC 21031:2024 / GSF SCI con 98,94% de reducción de CPU en RNF-010).
 - Contenedor, HPA, alta disponibilidad PostgreSQL y TLS: configurados como código; ejecución en staging pendiente de secretos.
 - El workflow publica cobertura, JSON de aceptación, capturas y build cuando finaliza correctamente; el cambio del 30 de octubre elimina su dependencia de OSM durante pruebas unitarias.
 
