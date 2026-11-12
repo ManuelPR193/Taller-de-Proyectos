@@ -47,6 +47,9 @@ jobs:
       - name: EN-05 spatial CPU benchmark
         working-directory: backend
         run: python tests/spatial_benchmark.py
+      - name: Green Software ISO/IEC 21031 verification
+        working-directory: backend
+        run: python tests/green_software_benchmark.py
       - name: Frontend quality
         working-directory: frontend
         run: |

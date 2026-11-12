@@ -168,6 +168,7 @@ El proyecto cuenta con una sólida arquitectura documental desarrollada durante 
 - [Calidad de código del Sprint 3](docs/03%20Implementacion/Sprint%203/03%20Calidad%20de%20c%C3%B3digo%20V_1_0_0.md)
 - [Seguridad OWASP del Sprint 3](docs/03%20Implementacion/Sprint%203/04%20OWASP%20V_1_0_0.md)
 - [Accesibilidad WCAG del Sprint 3](docs/03%20Implementacion/Sprint%203/05%20WCAG%20V_1_0_0.md)
+- [Green Software del Sprint 3](docs/03%20Implementacion/Sprint%203/08%20Green%20Software%20V_1_0_0.md)
 
 | Fecha | Versión | Descripción | Documentos / Módulos Afectados |
 |---|---|---|---|
@@ -176,4 +177,5 @@ El proyecto cuenta con una sólida arquitectura documental desarrollada durante 
 | 20/09/2026 | **v1.2.0** | Desarrollo de la SPA en React + Vite, mapa interactivo Leaflet y Dashboard de Sostenibilidad. | `frontend/src/pages/`, `frontend/src/components/` |
 | 28/09/2026 | **v1.3.0** | Implementación del Modo Conductor, Reglas de Negocio (RN-001 a RN-010) y Generación de Reportes PDF. | `backend/app/api/`, `frontend/src/pages/ModoConductor.jsx` |
 | 01/10/2026 | **v1.4.0** | Pruebas de integración E2E, calibración de parámetros Green VRP y actualización integral de documentación README. | Todo el proyecto |
+| 12/11/2026 | **v1.5.0** | Verificación de estándares Green Software (ISO/IEC 21031:2024 / GSF SCI), benchmark geoespacial RNF-010 y documentación técnica formal. | `docs/03 Implementacion/Sprint 3/08 Green Software V_1_0_0.md`, `backend/tests/green_software_benchmark.py` |
 
