@@ -335,6 +335,10 @@ Este estado distingue el trabajo incorporado de las mediciones todavía no ejecu
 
 Ejecutar desde la raíz del repositorio. Si la carpeta ya existe, mkdir -p no genera error.
 
+
+bash
+
+
 mkdir -p "docs/03 Implementación/reduccion del impacto ambiental"
 git status
 git add "docs/03 Implementación/reduccion del impacto ambiental/"
