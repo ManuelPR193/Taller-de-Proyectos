@@ -337,8 +337,6 @@ Ejecutar desde la raíz del repositorio. Si la carpeta ya existe, mkdir -p no ge
 
 
 bash
-
-
 mkdir -p "docs/03 Implementación/reduccion del impacto ambiental"
 git status
 git add "docs/03 Implementación/reduccion del impacto ambiental/"
@@ -347,3 +345,10 @@ git add backend/tests/swdm_from_lighthouse.py backend/tests/test_swdm_from_light
 git add frontend/lighthouserc.json .github/workflows/green-audit.yml
 git commit -m "docs(green-it): complete EcoLogistica green software audit v1.0.0"
 git push origin main
+
+
+
+
+
+
+Si el trabajo se realiza en otra rama, reemplazar main por el nombre de esa rama en el último comando y abrir un Pull Request hacia la rama principal.
