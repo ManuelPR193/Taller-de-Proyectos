@@ -335,8 +335,6 @@ Este estado distingue el trabajo incorporado de las mediciones todavía no ejecu
 
 Ejecutar desde la raíz del repositorio. Si la carpeta ya existe, mkdir -p no genera error.
 
-
-´´´bash
 mkdir -p "docs/03 Implementación/reduccion del impacto ambiental"
 git status
 
@@ -351,7 +349,7 @@ git add frontend/lighthouserc.json .github/workflows/green-audit.yml
 git commit -m "docs(green-it): complete EcoLogistica green software audit v1.0.0"
 
 git push origin main
-´´´
+
 
 
 
