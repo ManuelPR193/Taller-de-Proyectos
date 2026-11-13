@@ -330,19 +330,3 @@ La comparación válida debe utilizar el mismo equipo o runner, versión de nave
 
 Este estado distingue el trabajo incorporado de las mediciones todavía no ejecutadas. No se atribuyen al sistema resultados que no estén respaldados por reportes de auditoría.
 
-## 8. Gestión de versiones: comandos Git CLI
-
-Ejecutar desde la raíz del repositorio. Si la carpeta ya existe, `mkdir -p` no genera error.
-
-```bash
-mkdir -p "docs/03 Implementación/reduccion del impacto ambiental"
-git status
-git add "docs/03 Implementación/reduccion del impacto ambiental/"
-git add backend/app/api/pagination.py frontend/src/services/api.js
-git add backend/tests/swdm_from_lighthouse.py backend/tests/test_swdm_from_lighthouse.py
-git add frontend/lighthouserc.json .github/workflows/green-audit.yml
-git commit -m "docs(green-it): complete EcoLogistica green software audit v1.0.0"
-git push origin main
-```
-
-Si el trabajo se realiza en otra rama, reemplazar `main` por el nombre de esa rama en el último comando y abrir un Pull Request hacia la rama principal.
