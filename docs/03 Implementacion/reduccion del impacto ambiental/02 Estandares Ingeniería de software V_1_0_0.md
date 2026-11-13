@@ -1,5 +1,5 @@
 # Estándares de ingeniería de software y guía de desarrollo verde – EcoLogística Huancayo
-
+**Nombre del Proyecto:** EcoLogística Huancayo
 **Versión:** 1.0.0  
 **Stack:** React/Vite, FastAPI, SQLAlchemy y SQLite/PostgreSQL
 
