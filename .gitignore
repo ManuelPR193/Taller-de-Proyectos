@@ -11,6 +11,12 @@ frontend/dist/
 build/
 .scannerwork/
 
+# Playwright reports & artifacts
+playwright-report/
+test-results/
+frontend/playwright-report/
+frontend/test-results/
+
 # Python
 __pycache__/
 *.py[cod]
@@ -43,3 +49,8 @@ backend/data/roads/
 backend/test-artifacts/
 .coverage
 coverage.xml
+
+# Backup and temp files
+*~
+*.bak
+*.tmp

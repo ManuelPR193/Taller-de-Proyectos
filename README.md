@@ -2,6 +2,10 @@
 
 > **Optimizador de Rutas Sostenibles de Última Milla (VRPTW & Green VRP)** desarrollado para la empresa **"DistriRápido S.A.C."** como Proyecto Final de Asignatura (PFA).
 
+[![CI - Lint, Static Analysis and Build](https://github.com/ManuelPR193/Taller-de-Proyectos/actions/workflows/ci.yml/badge.svg)](https://github.com/ManuelPR193/Taller-de-Proyectos/actions/workflows/ci.yml)
+[![Tests - Unit, Integration and Playwright E2E](https://github.com/ManuelPR193/Taller-de-Proyectos/actions/workflows/tests.yml/badge.svg)](https://github.com/ManuelPR193/Taller-de-Proyectos/actions/workflows/tests.yml)
+[![Deploy Production](https://github.com/ManuelPR193/Taller-de-Proyectos/actions/workflows/deploy-production.yml/badge.svg)](https://github.com/ManuelPR193/Taller-de-Proyectos/actions/workflows/deploy-production.yml)
+
 ---
 
 ## 📌 Información del Proyecto
@@ -148,6 +152,12 @@ El proyecto cuenta con una sólida arquitectura documental desarrollada durante 
 - [03. Registro de riesgos](docs/02%20Planificaci%C3%B3n/03%20Registro%20de%20riesgos%20V_1_0_0.md)
 - [04. Presupuesto del proyecto](docs/02%20Planificaci%C3%B3n/04%20Presupuesto%20del%20proyecto%20V_1_0_0.md)
 
+### 📦 Fase 03: Implementación y Cierre del Sprint 4
+- [01. Revisión del Sprint (Sprint 4)](docs/03%20Inplementaci%C3%B3n/Sprint%204/01%20Revisi%C3%B3n%20del%20Sprint%20V_1_0_0.md)
+- [02. Retrospectiva del Sprint (Sprint 4)](docs/03%20Inplementaci%C3%B3n/Sprint%204/02%20Retrospectiva%20del%20Sprint%20V_1_0_0.md)
+- [03. Análisis de Pruebas E2E y Monitoreo con Playwright](docs/03%20Inplementaci%C3%B3n/Sprint%204/03%20Analisis%20PlayWrigth%20V_1_0_0.md)
+- [04. Evaluación Cuantitativa de Usabilidad (Escala SUS)](docs/03%20Inplementaci%C3%B3n/Sprint%204/04%20Usabilidad%20V_1_0_0.md)
+
 ### Seguimiento y cierre
 
 - [Seguimiento y Control](docs/05%20Seguimiento%20y%20Control/README.md)
@@ -178,4 +188,5 @@ El proyecto cuenta con una sólida arquitectura documental desarrollada durante 
 | 28/09/2026 | **v1.3.0** | Implementación del Modo Conductor, Reglas de Negocio (RN-001 a RN-010) y Generación de Reportes PDF. | `backend/app/api/`, `frontend/src/pages/ModoConductor.jsx` |
 | 01/10/2026 | **v1.4.0** | Pruebas de integración E2E, calibración de parámetros Green VRP y actualización integral de documentación README. | Todo el proyecto |
 | 12/11/2026 | **v1.5.0** | Verificación de estándares Green Software (ISO/IEC 21031:2024 / GSF SCI), benchmark geoespacial RNF-010 y documentación técnica formal. | `docs/03 Implementacion/Sprint 3/08 Green Software V_1_0_0.md`, `backend/tests/green_software_benchmark.py` |
+| 19/11/2026 | **v1.6.0** | Cierre de Sprint 4: Automatización E2E con Playwright (Chromium/Firefox/WebKit), evaluación SUS (87.0 pts), workflows CI/CD modulares y documentación formal. | `docs/03 Inplementación/Sprint 4/`, `.github/workflows/`, `frontend/e2e/`, `frontend/playwright.config.ts` |
 
