@@ -43,7 +43,7 @@ const AppContent = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#090d16] text-slate-100 flex flex-col font-sans selection:bg-emerald-500 selection:text-slate-950">
+    <div className="min-h-screen text-slate-100 flex flex-col font-sans operations-shell">
       <a className="skip-link" href="#main-content">Saltar al contenido</a>
       <Navbar />
       <main id="main-content" tabIndex={-1} className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6">

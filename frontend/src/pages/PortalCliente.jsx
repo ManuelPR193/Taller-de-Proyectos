@@ -132,11 +132,10 @@ export const PortalCliente = () => {
   };
 
   return (
-    <div className="space-y-6 pb-12 animate-fade-in">
+    <div className="space-y-6 pb-12 operations-detail-page client-page">
       
       {/* Header Banner for Client Portal */}
-      <div className="glass-panel p-6 border-amber-500/30 bg-gradient-to-r from-amber-950/40 via-slate-900/80 to-slate-900/60 relative overflow-hidden">
-        <div className="absolute right-0 top-0 translate-x-8 -translate-y-8 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+      <div className="glass-panel p-6 relative overflow-hidden">
 
         <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div className="space-y-2">
@@ -144,16 +143,16 @@ export const PortalCliente = () => {
               <ShoppingBag className="w-4 h-4" /> Portal del Cliente & Bodegas del Valle del Mantaro
             </div>
             <h2 className="text-3xl font-extrabold text-white tracking-tight">
-              Gestión de Pedidos & Rastreo Satelital en Tiempo Real
+              Tus pedidos y entregas
             </h2>
             <p className="text-slate-300 text-sm max-w-2xl">
-              Solicite despachos con flota ecológica DistriRápido S.A.C., consulte el estado de entrega y verifique su impacto ambiental positivo.
+              Solicita un despacho y consulta el estado de cada pedido.
             </p>
           </div>
 
           <button
             onClick={() => setShowNewOrderModal(true)}
-            className="btn-primary bg-gradient-to-r from-amber-500 to-emerald-500 text-slate-950 font-extrabold py-3.5 px-6 shrink-0 shadow-lg shadow-amber-500/20 hover:scale-105 transition"
+            className="btn-primary py-3.5 px-6 shrink-0"
           >
             <Plus className="w-5 h-5" /> Solicitar Nuevo Despacho
           </button>
@@ -188,10 +187,11 @@ export const PortalCliente = () => {
               {orders.map(ord => {
                 const isSelected = selectedOrder?.pedido_id === ord.pedido_id;
                 return (
-                  <div
+                  <button type="button"
                     key={ord.pedido_id}
                     onClick={() => setSelectedOrder(ord)}
-                    className={`p-4 rounded-xl border cursor-pointer transition ${
+                    aria-pressed={isSelected}
+                    className={`client-order-row w-full text-left p-4 rounded-xl border cursor-pointer transition ${
                       isSelected
                         ? 'bg-amber-500/15 border-amber-500/50 shadow-md'
                         : 'bg-slate-900/70 border-slate-800 hover:border-slate-700'
@@ -221,7 +221,7 @@ export const PortalCliente = () => {
                       <span>Prioridad: <b className={ord.prioridad === 'EXPRESS' ? 'text-red-400' : 'text-slate-200'}>{ord.prioridad}</b></span>
                       <span>Peso: <b className="text-white">{ord.peso_kg} kg</b></span>
                     </div>
-                  </div>
+                  </button>
                 );
               })}
             </div>

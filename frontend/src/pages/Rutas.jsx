@@ -55,10 +55,10 @@ export const Rutas = () => {
   const pendingExpressOrders = orders.filter(o => o.estado === 'PENDIENTE' && o.prioridad === 'EXPRESS');
 
   return (
-    <div className="space-y-6 pb-12 animate-fade-in">
+    <div className="space-y-6 pb-12 routes-page operations-page">
       
       {/* Action Header */}
-      <div className="glass-panel p-6 border-slate-700/80 bg-gradient-to-r from-slate-900/90 via-slate-900/70 to-emerald-950/40 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+      <div className="glass-panel p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 routes-heading">
         <div className="space-y-1">
           <div className="flex items-center gap-2 text-emerald-400 font-bold text-xs uppercase tracking-wider">
             <Sparkles className="w-4 h-4 text-emerald-400" /> Dijkstra + optimización de entregas

@@ -60,7 +60,7 @@ export const Conductores = () => {
   };
 
   return (
-    <div className="space-y-6 pb-12 animate-fade-in">
+    <div className="space-y-6 pb-12 operations-detail-page drivers-page">
       
       <DriverAccount drivers={drivers} />
       {/* Header Banner */}

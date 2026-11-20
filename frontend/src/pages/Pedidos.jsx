@@ -96,7 +96,7 @@ export const Pedidos = () => {
   });
 
   return (
-    <div className="space-y-6 pb-12 animate-fade-in">
+    <div className="space-y-6 pb-12 operations-detail-page orders-page">
       
       {/* Header Banner */}
       <div className="glass-panel p-6 border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
@@ -165,6 +165,10 @@ export const Pedidos = () => {
               <span className="font-mono text-emerald-400 font-bold bg-emerald-500/10 px-2.5 py-0.5 rounded-md border border-emerald-500/30">
                 {new Date(o.ventana_inicio).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {new Date(o.ventana_fin).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </span>
+            </div>
+            <div className="order-state-row">
+              <span>Estado del pedido</span>
+              <strong className={`order-state order-state--${String(o.estado || 'PENDIENTE').toLowerCase()}`}>{o.estado || 'PENDIENTE'}</strong>
             </div>
           </div>
         ))}

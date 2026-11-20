@@ -65,9 +65,8 @@ export const ModoConductor = () => {
   }
 
   return (
-    <section className="space-y-5">
-      <h2 className="text-3xl font-bold">Mi ruta del día</h2>
-      <p className="text-slate-300">{today()} · Solo rutas asignadas a su cuenta.</p>
+    <section className="space-y-5 operations-detail-page driver-mode-page">
+      <div className="driver-mode-heading glass-panel"><p className="eyebrow">OPERACIÓN DE CAMPO · {today()}</p><h2>Mi ruta del día</h2><p>Paradas asignadas a tu cuenta y confirmación de entregas con GPS.</p></div>
       {error && <p role="alert">{error}</p>}
       {loading ? (
         <p role="status">Cargando rutas...</p>

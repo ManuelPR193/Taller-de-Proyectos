@@ -78,7 +78,7 @@ export const Vehiculos = () => {
   };
 
   return (
-    <div className="space-y-6 pb-12 animate-fade-in">
+    <div className="space-y-6 pb-12 operations-detail-page fleet-page">
 
       {/* Header Banner */}
       <div className="glass-panel p-6 border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
