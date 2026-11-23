@@ -22,7 +22,7 @@ Los códigos `QA-E2E` y `DOC-S4` identifican entregables técnicos en esta revis
 
 La demostración **reproducible en entorno local** consiste en sembrar la base de datos de prueba, iniciar FastAPI, construir el frontend y ejecutar `npx playwright test` desde `frontend/`. Se verificaron autenticación, navegación entre módulos, mapa, indicadores obtenidos de la API, respuesta de `/api/health` y reacción del panel ante un fallo de red simulado. El reporte HTML se genera en `frontend/playwright-report/index.html` y `tests.yml` lo publica como artefacto cuando se ejecute en GitHub Actions.
 
-Además, `docker build -t ecologistica-sprint4-local .` terminó correctamente el 20/11/2026. El contenedor iniciado con configuración local respondió HTTP 200 en `/api/health` y `/login`, y Docker informó estado `healthy`. Esta prueba acredita empaquetado y arranque local, no despliegue público.
+La validaci?n local del 23/11/2026 no pudo completar `docker build -t ecologistica-final-validation:local .`: Docker no resolvi? `auth.docker.io` por DNS. Por ello no hay evidencia verificable de imagen construida ni de contenedor `healthy`; este resultado no demuestra un fallo del Dockerfile.
 
 No hay en el repositorio un acta, grabación, captura o lista de asistentes que demuestre una sesión con el docente o representantes de DistriRápido. Tampoco se verificó una URL de staging o producción. La demostración ante interesados y su retroalimentación se mantienen como **evidencia pendiente**, sin atribuirles aprobación.
 
