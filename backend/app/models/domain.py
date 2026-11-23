@@ -109,6 +109,8 @@ class RutaDetalle(Base):
     hora_real_entrega = Column(DateTime, nullable=True) # RN-010
     latitud = Column(Float, nullable=False)
     longitud = Column(Float, nullable=False)
+    latitud_entrega = Column(Float, nullable=True)
+    longitud_entrega = Column(Float, nullable=True)
 
     ruta = relationship("Ruta", back_populates="detalles")
     pedido = relationship("Pedido", back_populates="detalles_ruta")

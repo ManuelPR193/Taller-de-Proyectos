@@ -5,9 +5,6 @@ on:
     branches: [main, develop]
   pull_request:
     branches: [main, develop]
-  workflow_run:
-    workflows: ["CI - Lint, Static Analysis and Build"]
-    types: [completed]
 
 concurrency:
   group: tests-${{ github.workflow }}-${{ github.ref }}
@@ -80,6 +77,10 @@ jobs:
             sleep 1
           done
 
+      - name: Measure local API latency
+        working-directory: backend
+        run: python tests/api_latency_probe.py
+
       - name: Build and preview frontend for E2E
         working-directory: frontend
         shell: bash
@@ -104,6 +105,7 @@ jobs:
           path: |
             frontend/playwright-report/
             frontend/test-results/
+            backend/test-artifacts/api-latency-local.json
           retention-days: 14
 
       - name: Upload coverage evidence

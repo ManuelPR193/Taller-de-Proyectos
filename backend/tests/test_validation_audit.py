@@ -373,7 +373,13 @@ class APIAudit(unittest.TestCase):
         detail = routes[0]["detalles"][0]
         response = self.client.post("/api/v1/routes/deliver-confirm", json=dict(ruta_detalle_id=detail["ruta_detalle_id"], latitud=-12.0656, longitud=-75.2048))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(self.client.get("/api/v1/routes/" + routes[0]["ruta_id"]).json()["estado"], "COMPLETADA")
+        delivered_route = self.client.get("/api/v1/routes/" + routes[0]["ruta_id"]).json()
+        self.assertEqual(delivered_route["estado"], "COMPLETADA")
+        confirmed_stop = delivered_route["detalles"][0]
+        self.assertIsNotNone(confirmed_stop["hora_real_entrega"])
+        self.assertEqual(confirmed_stop["latitud_entrega"], -12.0656)
+        self.assertEqual(confirmed_stop["longitud_entrega"], -75.2048)
+        self.assertEqual(confirmed_stop["pedido"]["estado"], "ENTREGADO")
 
     def test_route_missing_resources_return_404(self):
         responses = [

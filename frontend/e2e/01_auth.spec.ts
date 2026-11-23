@@ -1,39 +1,31 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('E2E - Módulo de Autenticación y Control de Acceso', () => {
+test.describe('Autenticación', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/login');
   });
 
-  test('TC-AUTH-01: Carga correcta de pantalla de inicio de sesión con branding oficial', async ({ page }) => {
-    await expect(page).toHaveTitle(/EcoLogística|Login|EcoLogistica/i);
-    const loginHeading = page.locator('h1, h2, form').first();
-    await expect(loginHeading).toBeVisible();
+  test('muestra el formulario de acceso', async ({ page }) => {
+    await expect(page).toHaveTitle(/EcoLogística|EcoLogistica/i);
+    await expect(page.locator('input[type="email"]').first()).toBeVisible();
+    await expect(page.locator('input[type="password"]').first()).toBeVisible();
+    await expect(page.locator('button[type="submit"]').first()).toBeVisible();
   });
 
-  test('TC-AUTH-02: Rechazo ante credenciales vacías o inválidas con mensaje reactivo', async ({ page }) => {
-    const submitBtn = page.locator('button[type="submit"], button:has-text("Ingresar"), button:has-text("Iniciar Sesión")').first();
-    if (await submitBtn.isVisible()) {
-      await submitBtn.click();
-      const alertOrError = page.locator('.error, [role="alert"], text=/invalido|incorrecto|requerido|completa/i').first();
-      // Esperar validación visual de HTML5 o alerta de estado
-      expect(page.url()).toContain('/login');
-    }
+  test('impide enviar credenciales vacías', async ({ page }) => {
+    const email = page.locator('input[type="email"]').first();
+    await email.fill('');
+    await page.locator('input[type="password"]').first().fill('');
+    await page.locator('button[type="submit"]').first().click();
+    expect(await email.evaluate((el: HTMLInputElement) => el.validity.valueMissing)).toBe(true);
+    await expect(page.locator('nav')).toHaveCount(0);
   });
 
-  test('TC-AUTH-03: Inicio de sesión exitoso como Administrador / Operador de Flota', async ({ page }) => {
-    const emailInput = page.locator('input[type="email"], input[name="username"], input[name="email"], input#email').first();
-    const passInput = page.locator('input[type="password"]').first();
-    const submitBtn = page.locator('button[type="submit"], button:has-text("Ingresar"), button:has-text("Iniciar Sesión")').first();
-
-    if (await emailInput.isVisible() && await passInput.isVisible()) {
-      await emailInput.fill('admin@distrirapido.pe');
-      await passInput.fill('Admin123*');
-      await submitBtn.click();
-
-      // Debería redirigir al Dashboard o Rutas tras autenticación
-      await page.waitForTimeout(1000);
-      expect(page.url()).not.toContain('/login');
-    }
+  test('inicia sesión con el usuario de prueba', async ({ page }) => {
+    await page.locator('input[type="email"]').first().fill('admin@distrirapido.pe');
+    await page.locator('input[type="password"]').first().fill('admin123');
+    await page.locator('button[type="submit"]').first().click();
+    await expect(page.locator('nav')).toBeVisible();
+    await expect(page.locator('input[type="password"]')).toHaveCount(0);
   });
 });

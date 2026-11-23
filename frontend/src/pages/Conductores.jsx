@@ -67,7 +67,7 @@ export const Conductores = () => {
       <div className="glass-panel p-6 border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-white flex items-center gap-2.5">
-            <Users className="w-6 h-6 text-indigo-400" /> Registro y Gestión de Conductores (RF-008)
+            <Users className="w-6 h-6 text-emerald-300" /> Registro y Gestión de Conductores (RF-008)
           </h2>
           <p className="text-slate-400 text-sm mt-1">
             Personal de conducción con validación estricta de jornada laboral máxima de 8 horas (RN-003 - Ley N° 30224).

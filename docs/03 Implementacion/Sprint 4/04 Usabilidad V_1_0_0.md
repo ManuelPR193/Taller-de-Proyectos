@@ -11,7 +11,7 @@
 
 ## 1. Ficha Técnica de la Evaluación
 
-Para cuantificar de manera rigurosa la experiencia de usuario y facilidad de adopción del sistema **EcoLogística Huancayo**, se aplicó el instrumento psicométrico estandarizado **System Usability Scale (SUS)**, reconocido a nivel global como el estándar de la industria para evaluar la efectividad, eficiencia y satisfacción de sistemas interactivos.
+Este documento contiene una matriz de diez respuestas SUS y su cálculo. **La procedencia de las respuestas y la realización de las sesiones con usuarios no están respaldadas en el repositorio por formularios, actas ni consentimiento.** Por tanto, el resultado aritmético es verificable, pero la aplicación real del instrumento y la representatividad de la muestra quedan pendientes de evidencia externa.
 
 ### 1.1. Parámetros del Instrumento
 - **Formato:** Cuestionario estandarizado de 10 ítems (5 formulaciones positivas y 5 formulaciones negativas alternadas).
@@ -27,14 +27,14 @@ Para cuantificar de manera rigurosa la experiencia de usuario y facilidad de ado
   - Puntaje SUS del participante = $(\sum \text{puntuaciones individuales}) \times 2.5$ (Escala resultante de 0 a 100).
 
 ### 1.2. Perfil y Tamaño de la Muestra ($n = 10$)
-La muestra de evaluación estuvo conformada por **10 evaluadores representativos**, distribuidos en los roles operativos clave de la empresa "DistriRápido S.A.C." en Huancayo:
+La matriz del documento **describe 10 evaluadores**, distribuidos en los siguientes roles. La identidad y participación efectiva no pueden comprobarse con los archivos actuales:
 - **4 Conductores / Repartidores de Última Milla:** Usuarios que operan vehículos en rutas del Valle del Mantaro y utilizan el Modo Conductor desde dispositivos móviles.
 - **3 Operadores de Despacho y Logística:** Responsables de la carga de pedidos, visualización de rutas en mapa e inspección de niveles de tráfico.
 - **2 Administradores de Operaciones:** Usuarios encargados de la supervisión global de flota y consulta del dashboard de sostenibilidad de emisiones de CO₂.
 - **1 Auditor / Stakeholder Externo:** Evaluador independiente con enfoque en cumplimiento de estándares de accesibilidad y reportes ejecutivos.
 
 ### 1.3. Protocolo de Tareas Previas a la Evaluación
-Antes de responder el cuestionario SUS, cada participante completó de forma autónoma una batería de tareas representativas del flujo de negocio:
+El protocolo documentado indica estas tareas antes de responder el cuestionario. No se conserva evidencia individual de su ejecución:
 1. **Tarea 1:** Iniciar sesión con su rol asignado y navegar al panel principal.
 2. **Tarea 2:** (Operadores) Registrar un pedido con punto de referencia en El Tambo y generar la ruta optimizada.
 3. **Tarea 3:** (Conductores) Ingresar al Modo Conductor, ubicar la primera parada en el mapa interactivo y registrar la confirmación de entrega.
@@ -130,7 +130,7 @@ Aplicando las transformaciones de ítems impares ($X - 1$) e ítems pares ($5 - 
 $$\overline{SUS} = \frac{90.0 + 85.0 + 87.5 + 75.0 + 100.0 + 80.0 + 95.0 + 100.0 + 75.0 + 82.5}{10} = \frac{870.0}{10} = \mathbf{87.0}$$
 
 - **Puntaje SUS Promedio Global:** **87.0 / 100**
-- **Desviación Estándar ($\sigma$):** **9.25**
+- **Desviación Estándar poblacional ($\sigma$):** **8.79** (muestral: **9.26**)
 - **Rango de Puntuaciones:** Mínimo: 75.0 | Máximo: 100.0
 
 ---
@@ -141,13 +141,13 @@ $$\overline{SUS} = \frac{90.0 + 85.0 + 87.5 + 75.0 + 100.0 + 80.0 + 95.0 + 100.0
 De acuerdo con la literatura científica en ingeniería de usabilidad (Sauro & Lewis, 2016; Bangor et al., 2008):
 - El **umbral estándar de aceptación promedio** de la industria se sitúa en **68 puntos**.
 - Una puntuación superior a **80.3 puntos** ubica al software en el **percentil 90+** de aplicaciones a nivel mundial.
-- Con un puntaje global obtenido de **87.0**, el sistema **EcoLogística Huancayo supera ampliamente el umbral exigido (+19.0 puntos por encima del estándar de 68)**.
+- La matriz registrada produce **87.0**, es decir, **19.0 puntos por encima de 68**. Esta comparación describe los datos del documento; no permite afirmar que diez usuarios reales evaluaron el sistema hasta que se adjunte la evidencia de campo.
 
 ### 3.2. Clasificación por Adjetivos y Calificación por Grados
 - **Escala de Calificación por Letras (Grade Scale):** **Grado A+** (Rango 84.1 – 100).
 - **Escala de Adjetivos (Adjective Rating):** **"Excelente" (Excellent)**.
 - **Nivel de Aceptabilidad (Acceptability Range):** **"Altamente Aceptable" (Acceptable)**.
-- **Net Promoter Score (NPS) Estimado:** Ubicado en la categoría de **Promotores**.
+- **NPS:** No se midió. La puntuación SUS no permite calcularlo.
 
 ### 3.3. Identificación de Cuellos de Botella de Interfaz (UX Bottlenecks)
 A pesar de la alta calificación global, la descomposición de los puntajes permitió identificar áreas de optimización específicas en participantes con menor puntaje (U-04 y U-09, 75.0 pts):
@@ -155,8 +155,8 @@ A pesar de la alta calificación global, la descomposición de los puntajes perm
 2. **Tamaño del Área Táctil del Botón de Confirmación en Móviles de Pantalla Pequeña:** En dispositivos con pantallas menores a 5.5 pulgadas, el botón requería una precisión táctil mayor durante la conducción detenida.
 
 ### 3.4. Mejoras Implementadas y Propuestas
-- **Mejora Aplicada 1:** Se incrementó el contraste y grosor del trazado de líneas viales en `InteractiveMap.jsx`, añadiendo patrones discontinuos complementarios al color para garantizar legibilidad a usuarios con discromatopsias leves.
-- **Mejora Aplicada 2:** Se amplió el padding del botón flotante de confirmación de entrega en `ModoConductor.jsx` a un mínimo de **56x56 px**, cumpliendo sobradamente las directrices WCAG 2.1 nivel AAA para áreas interactivas móviles.
+- **Mejora propuesta 1:** Añadir patrones discontinuos complementarios al color en `InteractiveMap.jsx` y verificar el contraste. El código actual solo configura color y grosor.
+- **Mejora propuesta 2:** Medir el área táctil del botón de confirmación en `ModoConductor.jsx` y ampliarla si no alcanza el objetivo definido. El tamaño de **56x56 px** no está demostrado por una prueba o estilo explícito.
 - **Mejora Propuesta 3:** Incorporar confirmación háptica (vibración en el dispositivo móvil) al pulsar "Confirmar Entrega" para brindar retroalimentación física sin necesidad de mirar fijamente la pantalla.
 
 ---

@@ -10,14 +10,14 @@
 
 Durante el Sprint 4, el equipo consolidó importantes lecciones técnicas, metodológicas y de ingeniería de software:
 - **Automatización de pruebas E2E con Playwright:** Aprendimos que orquestar pruebas multi-navegador (Chromium, Firefox, WebKit) en entornos CI/CD sin servidor gráfico (headless) requiere una sincronización precisa entre el levantamiento del backend FastAPI y la compilación/preview de Vite, evitando condiciones de carrera mediante sondeos de salud HTTP (`curl /api/health`).
-- **Medición cuantitativa de Usabilidad:** La aplicación sistemática de la escala SUS (System Usability Scale) con 10 evaluadores reales proporcionó una perspectiva objetiva y cuantificable del diseño de interfaz que las revisiones heurísticas individuales no lograban reflejar.
+- **Medición cuantitativa de usabilidad:** La matriz SUS de diez respuestas permite comprobar el cálculo, pero faltan formularios o acta para verificar la participación real. Se aprendió a separar cálculo documental de evidencia de campo.
 - **Modularización de Flujos CI/CD:** La partición de un workflow monolítico en tres pipelines especializados (`ci.yml`, `tests.yml`, `deploy-production.yml`) optimizó los tiempos de cómputo en GitHub Actions y facilitó la identificación inmediata de fallos en etapas tempranas.
 
 ## ¿Qué estamos haciendo bien?
 
-- **Rigor en Estándares y Definition of Done (DoD):** Ningún cambio se incorporó a la rama principal sin pasar por análisis estático de vulnerabilidades (`bandit`, `pip-audit`), pruebas unitarias con cobertura superior al 80% y validación de accesibilidad WCAG.
-- **Sostenibilidad y Green Software:** Implementación y monitoreo continuo de la eficiencia energética del algoritmo de ruteo conforme a la norma ISO/IEC 21031, garantizando bajo consumo de CPU y memoria.
-- **Trazabilidad Integral del Proyecto:** Enlace bidireccional y versión controlada de cada documento técnico con los commits de Git y artefactos del repositorio.
+- **Pruebas reproducibles:** La ejecución local del 20/11/2026 aprobó 54 pruebas backend con 90 % de cobertura, tres pruebas frontend y 27 casos Playwright. Esto aún no demuestra que todos los cambios anteriores hayan pasado esos controles.
+- **Sostenibilidad y Green Software:** Existen benchmarks geoespaciales y cálculos de intensidad de carbono del software; falta seguimiento continuo en producción y una comparación antes/después reproducible.
+- **Organización documental:** Los cuatro informes del Sprint 4 enlazan al README y el README enlaza de regreso. La trazabilidad de historias a commits requiere depuración adicional.
 
 ## ¿Qué podemos hacer mejor?
 

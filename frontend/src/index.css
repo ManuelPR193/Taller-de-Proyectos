@@ -3,21 +3,14 @@
 @tailwind utilities;
 
 :root {
-  --font-heading: 'Outfit', sans-serif;
-  --font-body: 'Plus Jakarta Sans', 'Inter', sans-serif;
+  --font-heading: 'Aptos Display', 'Segoe UI', Arial, sans-serif;
+  --font-body: 'Aptos', 'Segoe UI', Arial, sans-serif;
 
   --bg-dark: #070b14;
   --bg-card: rgba(15, 23, 42, 0.65);
-  --bg-card-hover: rgba(30, 41, 67, 0.85);
-  --border-glow: rgba(16, 185, 129, 0.25);
-
   --emerald-500: #10b981;
   --emerald-400: #34d399;
-  --teal-400: #2dd4bf;
-  --cyan-400: #22d3ee;
   --amber-400: #fbbf24;
-  --rose-400: #fb7185;
-  --indigo-400: #818cf8;
 }
 
 * {
@@ -29,11 +22,7 @@
 body {
   font-family: var(--font-body);
   background-color: var(--bg-dark);
-  background-image:
-    radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.12) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, rgba(14, 165, 233, 0.1) 0px, transparent 50%),
-    radial-gradient(at 50% 100%, rgba(99, 102, 241, 0.08) 0px, transparent 50%);
-  background-attachment: fixed;
+  background-image: none;
   color: #f1f5f9;
   min-height: 100vh;
   overflow-x: hidden;
@@ -56,17 +45,15 @@ h6 {
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 1rem;
-  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.6);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: none;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .glass-card {
   background: rgba(20, 30, 52, 0.55);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
   border: 1px solid rgba(255, 255, 255, 0.07);
   border-radius: 0.875rem;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
 }
 
 .glass-card:hover {
@@ -74,24 +61,6 @@ h6 {
   border-color: rgba(16, 185, 129, 0.35);
   transform: translateY(-3px);
   box-shadow: 0 12px 30px -8px rgba(16, 185, 129, 0.2);
-}
-
-.glass-card-glow {
-  position: relative;
-}
-
-.glass-card-glow::before {
-  content: '';
-  position: absolute;
-  inset: -1px;
-  border-radius: 0.875rem;
-  padding: 1px;
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.4), rgba(59, 130, 246, 0.2), transparent);
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  pointer-events: none;
 }
 
 /* Badges */
@@ -106,7 +75,6 @@ h6 {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  box-shadow: 0 0 10px rgba(16, 185, 129, 0.15);
 }
 
 .badge-warning {
@@ -146,24 +114,11 @@ h6 {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  animation: pulse-border 2s infinite;
-}
-
-@keyframes pulse-border {
-
-  0%,
-  100% {
-    border-color: rgba(248, 113, 113, 0.4);
-  }
-
-  50% {
-    border-color: rgba(248, 113, 113, 0.9);
-  }
 }
 
 /* Custom Buttons */
 .btn-primary {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: #b8d29c;
   color: #ffffff;
   font-weight: 600;
   padding: 0.7rem 1.35rem;

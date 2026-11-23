@@ -182,7 +182,7 @@ export const Rutas = () => {
                   </div>
                   <div>
                     <span className="text-slate-400 block text-[10px] font-medium">Emisión CO₂</span>
-                    <strong className="text-cyan-400 font-bold text-sm">{route.co2_total_kg} kg</strong>
+                    <strong className="text-emerald-300 font-bold text-sm">{route.co2_total_kg} kg</strong>
                   </div>
                   <div>
                     <span className="text-slate-400 block text-[10px] font-medium">Combustible</span>

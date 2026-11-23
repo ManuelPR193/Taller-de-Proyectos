@@ -1,148 +1,79 @@
-[← Volver al README Principal](../../../README.md)
+[← Volver al README principal](../../../README.md)
 
-# Informe Técnico: Pruebas E2E, Monitoreo de Rendimiento y Disponibilidad con Playwright
+# Análisis de pruebas E2E, rendimiento y disponibilidad con Playwright
 
-**Proyecto:** EcoLogística Huancayo — Optimizador de Rutas Sostenibles para "DistriRápido S.A.C."  
-**Versión del Documento:** 1.0.0 | **Fecha:** 2026-11-19  
-**Responsable de Calidad:** Equipo de Calidad y Pruebas (Manuel Yeferson Parraga Recuay, Sheila Suarez Suarez, David André Guevara Moscoso, Jair Felix Romero)  
-**Entorno de Ejecución:** Node.js v22.x / Python 3.12, Ubuntu 24.04 LTS (CI/CD GitHub Actions) y Windows 11 Pro (Local)  
+**Proyecto:** EcoLogística Huancayo
 
----
+**Fecha de validación local:** 20/11/2026
+**Entorno:** Windows, Node.js 22, Python 3.11, Vite preview en `localhost:5173` y FastAPI en `127.0.0.1:8000` con datos de prueba. Este entorno no es producción.
 
-## 1. Configuración del Entorno de Pruebas
+## Configuración y reproducción
 
-Para garantizar la cobertura funcional y la experiencia homogénea de usuario en múltiples plataformas, se configuró una arquitectura integral de pruebas automatizadas End-to-End (E2E) basada en **Playwright Test Runner**.
-
-### 1.1. Arquitectura de Carpetas de Pruebas
-La suite de pruebas E2E se aloja en el subdirectorio `frontend/e2e/`, manteniendo una estricta separación modular por dominio funcional:
+La configuración está en [`frontend/playwright.config.ts`](../../../frontend/playwright.config.ts). Los nueve casos de `frontend/e2e/` se repiten en Chromium, Firefox y WebKit; hay captura y vídeo en fallos, informe HTML y JSON. La dependencia `@playwright/test` está declarada en `frontend/package.json`.
 
 ```text
-frontend/
-├── e2e/
-│   ├── 01_auth.spec.ts                 # Autenticación, validación de credenciales y roles
-│   ├── 02_business_flow.spec.ts        # Navegación, carga de mapas Leaflet y cálculo Green VRP
-│   └── 03_performance_resilience.spec.ts # Web Vitals, disponibilidad HTTP y resiliencia de red
-├── playwright-report/                   # Reporte interactivo HTML y trazas de ejecución
-├── test-results/                        # Grabaciones de video, capturas de pantalla de fallos
-└── playwright.config.ts                # Archivo principal de configuración de Playwright
+python -m venv .venv
+.venv/Scripts/python -m pip install -r backend/requirements-dev.txt
+cd backend
+../.venv/Scripts/python seed_data.py
+../.venv/Scripts/python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+# En otra terminal:
+cd frontend
+npm ci
+npm run build
+npx playwright install chromium firefox webkit
+npx playwright test
 ```
 
-### 1.2. Motores de Navegación Evaluados (Cross-Browser)
-La configuración de Playwright contempla la ejecución concurrente sobre los tres motores de renderizado estándar de la industria:
-1. **Chromium (Desktop Chrome):** Emulación de Google Chrome y Microsoft Edge, evaluando el comportamiento en el 72% del tráfico de escritorio proyectado.
-2. **Firefox (Desktop Firefox):** Motor Gecko, validando compatibilidad de renderizado CSS Grid, flexbox y APIs de temporización.
-3. **WebKit (Desktop Safari):** Motor WebKit de Apple, esencial para verificar el correcto funcionamiento del renderizado del mapa Leaflet y controles SVG en entornos macOS e iOS.
+En Linux, usar `.venv/bin/python` en lugar de `Scripts/python`. El workflow [`tests.yml`](../../../.github/workflows/tests.yml) automatiza estas etapas y sube `playwright-report/`, `test-results/` y `coverage.xml` como artefactos.
 
-### 1.3. Configuración Principal (`playwright.config.ts`)
-El archivo de configuración define tiempos máximos de espera (`timeout: 30s`), capturas automáticas ante fallos (`screenshot: 'only-on-failure'`), trazas de depuración (`trace: 'on-first-retry'`) y orquestación automática de servidores de prueba mediante la directiva `webServer`:
+## Casos y resultado local
 
-```typescript
-import { defineConfig, devices } from '@playwright/test';
+| Grupo | Comprobaciones reales | Chromium | Firefox | WebKit |
+|---|---|---:|---:|---:|
+| Autenticación | Formulario visible, validación HTML de campos vacíos, acceso del usuario sembrado | 3/3 | 3/3 | 3/3 |
+| Negocio | Mapa Leaflet en rutas, navegación a conductores, respuesta 200 y tarjetas del dashboard | 3/3 | 3/3 | 3/3 |
+| Calidad operativa | Tiempos de navegación, salud HTTP 200, error visible ante fallo simulado de la API | 3/3 | 3/3 | 3/3 |
+| **Total** | Ejecución local del 20/11/2026 | **9/9** | **9/9** | **9/9** |
 
-export default defineConfig({
-  testDir: './e2e',
-  timeout: 30000,
-  expect: { timeout: 5000 },
-  fullyParallel: true,
-  retries: process.env.CI ? 2 : 0,
-  reporter: [
-    ['html', { outputFolder: 'playwright-report', open: 'never' }],
-    ['json', { outputFile: 'playwright-report/results.json' }],
-    ['list']
-  ],
-  use: {
-    baseURL: process.env.BASE_URL || 'http://localhost:5173',
-    trace: 'on-first-retry',
-    screenshot: 'only-on-failure',
-  },
-  projects: [
-    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
-    { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
-    { name: 'webkit', use: { ...devices['Desktop Safari'] } },
-  ],
-});
-```
+Resultado global: **27 aprobadas, 0 fallidas**. Se conserva una [captura del reporte HTML local](evidencias/reporte-playwright-local.png) con los 27 resultados y los tres navegadores. El informe HTML interactivo queda en `frontend/playwright-report/index.html`; el JSON y las capturas de fallos se generan en las carpetas ignoradas por Git. Estos resultados no certifican que GitHub Actions haya corrido en verde: eso requiere revisar la ejecución remota tras publicar los cambios.
 
----
+## Mediciones de navegación
 
-## 2. Pruebas End-to-End (E2E) y Resultados de Ejecución
+La prueba registra `PerformanceNavigationTiming`, FCP y LCP cuando el navegador los expone. Cada ejecución guarda `navigation-metrics.json` en `frontend/test-results/`. Una muestra local de la página `/login` produjo:
 
-### 2.1. Casos de Prueba Críticos Implementados
+| Motor | TTFB | DOM Content Loaded | Carga | FCP | LCP |
+|---|---:|---:|---:|---:|---:|
+| Chromium | 4,4 ms | 681 ms | 681 ms | no expuesto | no expuesto |
+| Firefox | 5 ms | 2245 ms | 2352 ms | 2340 ms | no expuesto |
+| WebKit | 12 ms | 440 ms | 442 ms | 665 ms | 665 ms |
 
-| Código de Prueba | Módulo / Flujo | Descripción del Escenario de Prueba | Criterio de Éxito |
-|---|---|---|---|
-| **TC-AUTH-01** | Autenticación | Carga de formulario de login con branding oficial y estilos accesibles | Formulario visible con campos interactivos en < 1.0 s |
-| **TC-AUTH-02** | Autenticación | Validación reactiva ante credenciales vacías o formato incorrecto | Bloqueo de envío y mensaje de validación visible |
-| **TC-AUTH-03** | Autenticación | Inicio de sesión exitoso con credenciales de Administrador/Operador | Redirección inmediata a dashboard y almacenamiento de token |
-| **TC-BIZ-01** | Negocio / Mapas | Carga y renderizado de capas del mapa Leaflet y OpenStreetMap | Contenedor `.leaflet-container` y tiles visibles |
-| **TC-BIZ-02** | Negocio / Flota | Navegación entre Dashboard, Rutas y Conductores | Transición de rutas SPA sin recarga total de página |
-| **TC-BIZ-03** | Negocio / Sostenibilidad | Renderizado de métricas Green VRP (CO₂, combustible, distancia) | Visualización de valores calculados y cards informativas |
-| **TC-PERF-01** | Rendimiento | Captura de métricas Web Vitals mediante API Performance Timing | TTFB < 800 ms y DOM Content Loaded < 3000 ms |
-| **TC-NET-02** | Red / API | Verificación de código de estado HTTP 200 en endpoints clave | Retorno `status: 200` y payload JSON válido en `/api/health` |
-| **TC-RES-03** | Resiliencia | Simulación de degradación o corte de red hacia servicios de tráfico | La UI mantiene operatividad sin pantalla en blanco |
+Son **mediciones de una ejecución local**, sujetas a máquina, caché y carga concurrente de pruebas. No reemplazan una auditoría Lighthouse ni muestran el rendimiento de producción. El informe anterior atribuía FCP de 890 ms, LCP de 1420 ms, tiempos de API y uptime de 99,9 % sin artefactos verificables; esas cifras no se conservan como resultados.
 
-### 2.2. Resumen Cuantitativo de Resultados por Navegador
+### Latencia local de API
 
-La suite fue ejecutada en el pipeline de GitHub Actions (`tests.yml`) en modo headless y en estación de trabajo de desarrollo:
+El script [`backend/tests/api_latency_probe.py`](../../../backend/tests/api_latency_probe.py) realizó 20 solicitudes por endpoint contra la API local sembrada. La [salida JSON conservada](evidencias/api-latency-local.json) incluye fecha UTC, mínimo, mediana, percentil 95 por rango más próximo y máximo.
 
-| Navegador | Pruebas Ejecutadas | Pruebas Aprobadas (Passed) | Pruebas Fallidas (Failed) | Tasa de Éxito (%) | Tiempo Total de Ejecución |
-|---|---|---|---|---|---|
-| **Chromium** | 9 | 9 | 0 | **100.0%** | 8.42 s |
-| **Firefox** | 9 | 9 | 0 | **100.0%** | 10.15 s |
-| **WebKit** | 9 | 9 | 0 | **100.0%** | 11.28 s |
-| **Consolidado Global** | **27** | **27** | **0** | **100.0%** | **29.85 s** |
+| Endpoint | Muestra | Mediana | p95 | Máximo |
+|---|---:|---:|---:|---:|
+| `GET /api/health` | 20 | 1,36 ms | 2,01 ms | 7,29 ms |
+| `POST /api/v1/auth/login` | 20 | 225,72 ms | 252,58 ms | 275,54 ms |
+| `GET /api/v1/vehicles/` | 20 | 5,78 ms | 6,83 ms | 7,11 ms |
 
----
+Estos tiempos excluyen red pública y carga concurrente representativa. No hay una tasa de uptime medida.
 
-## 3. Monitoreo de Rendimiento y Web Vitals
+Se intentó Lighthouse CLI localmente sobre `/login` con Chromium de Playwright y Chrome instalado, tanto con configuración móvil como de escritorio. Las ejecuciones terminaron con `NO_FCP` (la herramienta no detectó pintura) y **no generaron score válido**. Los JSON de error quedan en `frontend/playwright-report/` local, que Git ignora. Se requiere repetir la auditoría en un runner o entorno que permita obtener la pintura de la página.
 
-A través del caso automatizado `TC-PERF-01` y la integración con la API de `PerformanceNavigationTiming`, se obtuvieron mediciones empíricas de los tiempos de carga en el entorno de pruebas:
+## Disponibilidad y resiliencia
 
-### 3.1. Métricas de Rendimiento Frontend (Web Vitals)
+`GET /api/health` debe responder HTTP 200 y `status: online`; la prueba falla si la API no está disponible. Otra prueba aborta la solicitud de métricas del dashboard y verifica que aparece un mensaje de error y que el encabezado del panel sigue visible. Esto comprueba **una falla simulada local**, no recuperación automática ni tolerancia a desconexión prolongada.
 
-| Métrica de Rendimiento | Definición Técnica | Valor Obtenido | Umbral de Aceptación (Bueno) | Estado |
-|---|---|---|---|---|
-| **TTFB** (Time to First Byte) | Tiempo transcurrido hasta recibir el primer byte del servidor | **412 ms** | < 800 ms | **Aprobado** |
-| **FCP** (First Contentful Paint) | Primer renderizado visual de texto o imagen en pantalla | **890 ms** | < 1,800 ms | **Aprobado** |
-| **LCP** (Largest Contentful Paint) | Renderizado del bloque de contenido más grande (mapa/dashboard) | **1,420 ms** | < 2,500 ms | **Aprobado** |
-| **DCL** (DOM Content Loaded) | Tiempo total de parseo y construcción del árbol DOM | **650 ms** | < 1,500 ms | **Aprobado** |
+## Evidencia que falta para el nivel sobresaliente
 
-### 3.2. Tiempos de Respuesta de la API Backend (FastAPI)
+- Ejecutar y conservar el artefacto de GitHub Actions para el commit que se entregue.
+- Medir Lighthouse en una URL desplegada y registrar score, TBT, CLS, bytes, FCP y LCP con fecha, commit, perfil de dispositivo y versión del navegador.
+- Medir latencia de endpoints críticos con muestra y percentiles; comprobar uptime durante un periodo definido con un monitor externo.
+- Añadir pruebas de creación de pedido, optimización de ruta y confirmación de entrega en navegador, con datos aislados y aserciones sobre el resultado persistido.
+- Conservar una grabación o acta de la demostración a usuarios y sus observaciones, además de la captura técnica ya adjunta.
 
-Las peticiones HTTP realizadas durante las pruebas E2E arrojaron tiempos de respuesta óptimos, favorecidos por las optimizaciones del Enabler EN-05:
-
-| Endpoint Evaluado | Método HTTP | Función / Propósito | Tiempo Promedio de Respuesta |
-|---|---|---|---|
-| `/api/health` | GET | Sondeo de disponibilidad del microservicio | **12 ms** |
-| `/api/auth/token` | POST | Autenticación y generación de JWT (Bcrypt) | **148 ms** |
-| `/api/vehicles/` | GET | Listado de flota vehicular registrada | **34 ms** |
-| `/api/orders/` | GET | Listado de pedidos activos de Huancayo | **45 ms** |
-| `/api/routes/optimize` | POST | Ejecución del solver VRPTW con OR-Tools | **320 ms** |
-
----
-
-## 4. Disponibilidad, Resiliencia y Manejo de Errores
-
-### 4.1. Verificación de Códigos de Estado y Salud del Sistema
-La prueba `TC-NET-02` verificó la disponibilidad continua del backend mediante el endpoint `/api/health`, el cual retornó de manera consistente:
-```json
-{
-  "status": "healthy",
-  "service": "ecologistica-huancayo-backend",
-  "version": "1.0.0",
-  "environment": "production"
-}
-```
-Con un uptime verificado del **99.9%** durante las sesiones continuas de pruebas de carga e integración.
-
-### 4.2. Tolerancia a Fallos de Red (Network Resilience)
-En el caso `TC-RES-03`, se interceptaron intencionalmente las peticiones dirigidas a capas cartográficas externas (OpenStreetMap y servicios de tráfico) forzando códigos de error `503 Service Unavailable` y fallos de conexión `ERR_INTERNET_DISCONNECTED`. 
-- **Comportamiento observado:** La aplicación capturó la excepción en el cliente mediante componentes de límite de error (Error Boundaries), desplegando una alerta accesible e interactiva que ofrece al usuario la visualización en formato tabular de paradas sin interrumpir la sesión ni provocar el colapso de la aplicación (pantalla blanca).
-
-### 4.3. Evidencias y Artefactos del Reporte HTML
-El reporte HTML generado por Playwright se almacena automáticamente como artefacto en cada ejecución del workflow `tests.yml`:
-- **Ruta de artefacto en pipeline:** `.github/workflows/tests.yml` -> `playwright-report` (retención de 14 días).
-- **Contenido del reporte:** Registro paso a paso de cada aserción, capturas de pantalla de la renderización del mapa, árbol de llamadas de red y métricas consolidadas en formato JSON exportable.
-
----
-[← Volver al README Principal](../../../README.md)
+[← Volver al README principal](../../../README.md)

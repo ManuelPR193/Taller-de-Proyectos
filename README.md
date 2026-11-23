@@ -1,4 +1,4 @@
-# 🌿 EcoLogística Huancayo 🚛
+﻿# 🌿 EcoLogística Huancayo 🚛
 
 > **Optimizador de Rutas Sostenibles de Última Milla (VRPTW & Green VRP)** desarrollado para la empresa **"DistriRápido S.A.C."** como Proyecto Final de Asignatura (PFA).
 
@@ -23,7 +23,7 @@
 
 ## 🚀 Resumen Ejecutivo
 
-**EcoLogística Huancayo** es una plataforma web integral diseñada para resolver los desafíos logísticos de distribución urbana en el Valle del Mantaro. La solución combina algoritmos de optimización combinatoria (**Vehicle Routing Problem with Time Windows - VRPTW**) con enfoques de sostenibilidad medioambiental (**Green VRP**), logrando reducir las emisiones de CO₂, el consumo de combustible y los costos operativos de la empresa *DistriRápido S.A.C.*
+**EcoLogística Huancayo** es una plataforma web para apoyar la planificación de entregas de última milla en el Valle del Mantaro. Combina optimización de rutas con ventanas de tiempo (**VRPTW**) y criterios ambientales (**Green VRP**). El dashboard calcula estimaciones de distancia, combustible y CO₂ a partir de rutas planificadas; el repositorio no acredita reducciones medidas en operación real.
 
 ---
 
@@ -127,6 +127,8 @@ npm run dev
 
 ## 📚 Documentación Formal del Proyecto
 
+- [Resumen completo de la plataforma](docs/RESUMEN_PLATAFORMA.md)
+
 El proyecto cuenta con una sólida arquitectura documental desarrollada durante las distintas fases del ciclo de vida software:
 
 > **Alcance verificable:** el tráfico mostrado corresponde a observaciones del operador con vigencia de 30 minutos, no a un proveedor de tráfico en tiempo real. Las métricas ambientales son estimaciones calculadas desde rutas y factores configurados. Staging, Jira, pruebas con conductores y firma docente requieren evidencia externa.
@@ -153,10 +155,21 @@ El proyecto cuenta con una sólida arquitectura documental desarrollada durante 
 - [04. Presupuesto del proyecto](docs/02%20Planificaci%C3%B3n/04%20Presupuesto%20del%20proyecto%20V_1_0_0.md)
 
 ### 📦 Fase 03: Implementación y Cierre del Sprint 4
-- [01. Revisión del Sprint (Sprint 4)](docs/03%20Inplementaci%C3%B3n/Sprint%204/01%20Revisi%C3%B3n%20del%20Sprint%20V_1_0_0.md)
-- [02. Retrospectiva del Sprint (Sprint 4)](docs/03%20Inplementaci%C3%B3n/Sprint%204/02%20Retrospectiva%20del%20Sprint%20V_1_0_0.md)
-- [03. Análisis de Pruebas E2E y Monitoreo con Playwright](docs/03%20Inplementaci%C3%B3n/Sprint%204/03%20Analisis%20PlayWrigth%20V_1_0_0.md)
-- [04. Evaluación Cuantitativa de Usabilidad (Escala SUS)](docs/03%20Inplementaci%C3%B3n/Sprint%204/04%20Usabilidad%20V_1_0_0.md)
+- [01. Revisión del Sprint (Sprint 4)](docs/03%20Implementacion/Sprint%204/01%20Revisi%C3%B3n%20del%20Sprint%20V_1_0_0.md)
+- [02. Retrospectiva del Sprint (Sprint 4)](docs/03%20Implementacion/Sprint%204/02%20Retrospectiva%20del%20Sprint%20V_1_0_0.md)
+- [03. Análisis de Pruebas E2E y Monitoreo con Playwright](docs/03%20Implementacion/Sprint%204/03%20Analisis%20PlayWrigth%20V_1_0_0.md)
+- [04. Evaluación Cuantitativa de Usabilidad (Escala SUS)](docs/03%20Implementacion/Sprint%204/04%20Usabilidad%20V_1_0_0.md)
+
+### Cierre y evaluación final
+
+- [01. Reporte de Estado](docs/04%20Cierre/01%20Reporte%20de%20Estado%20V_1_0_0.md)
+- [02. Reporte de Variación](docs/04%20Cierre/02%20Reporte%20de%20Variaci%C3%B3n%20V_1_0_0.md)
+- [03. Análisis de Valor Ganado (EVM)](docs/04%20Cierre/03%20Reporte%20de%20An%C3%A1lisis%20de%20Valor%20Ganado%20-%20EVM%20V_1_0_0.md)
+- [04. Tableros de Control Híbridos](docs/04%20Cierre/04%20Tableros%20de%20Control%20-%20H%C3%ADbridos%20V_1_0_0.md)
+- [05. Radiadores de Información](docs/04%20Cierre/05%20Radiadores%20de%20Informaci%C3%B3n%20V_1_0_0.md)
+- [06. Reporte Final del Proyecto](docs/04%20Cierre/06%20Reporte%20Final%20del%20Proyecto%20V_1_0_0.md)
+- [07. Lecciones Aprendidas](docs/04%20Cierre/07%20Reporte%20Final%20de%20Lecciones%20Aprendidas%20V_1_0_0.md)
+- [Evidencia audiovisual y guía de grabación](docs/05%20Video%20proyecto/README.md) — MP4 pendiente de grabación.
 
 ### Seguimiento y cierre
 
@@ -188,5 +201,6 @@ El proyecto cuenta con una sólida arquitectura documental desarrollada durante 
 | 28/09/2026 | **v1.3.0** | Implementación del Modo Conductor, Reglas de Negocio (RN-001 a RN-010) y Generación de Reportes PDF. | `backend/app/api/`, `frontend/src/pages/ModoConductor.jsx` |
 | 01/10/2026 | **v1.4.0** | Pruebas de integración E2E, calibración de parámetros Green VRP y actualización integral de documentación README. | Todo el proyecto |
 | 12/11/2026 | **v1.5.0** | Verificación de estándares Green Software (ISO/IEC 21031:2024 / GSF SCI), benchmark geoespacial RNF-010 y documentación técnica formal. | `docs/03 Implementacion/Sprint 3/08 Green Software V_1_0_0.md`, `backend/tests/green_software_benchmark.py` |
-| 19/11/2026 | **v1.6.0** | Cierre de Sprint 4: Automatización E2E con Playwright (Chromium/Firefox/WebKit), evaluación SUS (87.0 pts), workflows CI/CD modulares y documentación formal. | `docs/03 Inplementación/Sprint 4/`, `.github/workflows/`, `frontend/e2e/`, `frontend/playwright.config.ts` |
+| 19/11/2026 | **v1.6.0** | Incremento de Sprint 4: Playwright para Chromium/Firefox/WebKit, matriz SUS con promedio calculado de 87,0 pendiente de respaldo de campo, workflows CI/CD y documentación. | `docs/03 Implementacion/Sprint 4/`, `.github/workflows/`, `frontend/e2e/`, `frontend/playwright.config.ts` |
+| 23/11/2026 | **v1.7.0** | Rediseño de acceso siguiendo Taste Skill; informes de cierre híbrido y gráficos trazables. EVM, Jira, costos reales, aceptación y video se mantienen pendientes cuando falta evidencia fuente. | `frontend/src/`, `docs/04 Cierre/`, `docs/05 Video proyecto/`, `.gitignore` |
 

@@ -23,6 +23,9 @@ __pycache__/
 *$py.class
 *.so
 .Python
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
 env/
 venv/
 ENV/
@@ -31,12 +34,16 @@ venv.bak/
 
 # Environment files
 .env
-.env.local
-.env.*.local
+.env.*
+!.env.example
 
 # Database files
 *.db
 *.sqlite3
+*.sqlite
+*.db-journal
+.coverage.*
+coverage/
 
 # IDE & OS files
 .vscode/
@@ -54,3 +61,13 @@ coverage.xml
 *~
 *.bak
 *.tmp
+*.log
+*.pem
+*.key
+*.p12
+*.pfx
+secrets/
+frontend/coverage/
+
+# Local Python virtual environment
+.venv/

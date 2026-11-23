@@ -1,10 +1,9 @@
 name: Deploy Production
 
 on:
-  push:
-    branches: [main]
-    tags:
-      - 'v*'
+  workflow_run:
+    workflows: ["Tests - Unit, Integration and Playwright E2E"]
+    types: [completed]
   workflow_dispatch:
 
 concurrency:
@@ -13,24 +12,25 @@ concurrency:
 
 jobs:
   deploy-production:
+    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.event == 'push')
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - name: Require production configuration
+        env:
+          PRODUCTION_DEPLOY_HOOK: ${{ secrets.PRODUCTION_DEPLOY_HOOK }}
+          PRODUCTION_URL: ${{ secrets.PRODUCTION_URL }}
+        run: |
+          test -n "$PRODUCTION_DEPLOY_HOOK" || { echo "Missing PRODUCTION_DEPLOY_HOOK secret"; exit 1; }
+          test -n "$PRODUCTION_URL" || { echo "Missing PRODUCTION_URL secret"; exit 1; }
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-
-      - name: Log in to Container Registry / Staging Registry
-        if: env.HAS_REGISTRY == 'true'
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-        env:
-          HAS_REGISTRY: ${{ secrets.GITHUB_TOKEN != '' }}
 
       - name: Build and validate production container image
         uses: docker/build-push-action@v5
@@ -47,26 +47,16 @@ jobs:
           PRODUCTION_DEPLOY_HOOK: ${{ secrets.PRODUCTION_DEPLOY_HOOK }}
           PRODUCTION_API_URL: ${{ secrets.PRODUCTION_API_URL }}
         run: |
-          if [ -n "$PRODUCTION_DEPLOY_HOOK" ]; then
-            echo "Triggering cloud deploy hook for production..."
-            curl -fsS -X POST "$PRODUCTION_DEPLOY_HOOK"
-            echo "Production deployment trigger dispatched successfully."
-          else
-            echo "PRODUCTION_DEPLOY_HOOK secret is not configured in this repository."
-            echo "Validating Docker container production build locally as standalone artifact."
-          fi
+          curl -fsS -X POST "$PRODUCTION_DEPLOY_HOOK"
+          echo "Production deployment trigger dispatched."
 
       - name: Health check verification of production endpoint
         env:
           PRODUCTION_URL: ${{ secrets.PRODUCTION_URL }}
         run: |
-          if [ -n "$PRODUCTION_URL" ]; then
-            echo "Verifying production health check on $PRODUCTION_URL..."
-            for i in {1..20}; do
-              curl -fsS "$PRODUCTION_URL/api/health" && exit 0
-              sleep 5
-            done
-            echo "Warning: Production health check reached timeout."
-          else
-            echo "PRODUCTION_URL secret is not defined. Manual verification post-deploy applies."
-          fi
+          for i in {1..20}; do
+            curl -fsS "$PRODUCTION_URL/api/health" && exit 0
+            sleep 5
+          done
+          echo "Production health check failed"
+          exit 1

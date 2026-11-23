@@ -114,6 +114,8 @@ class RutaDetalleOut(BaseModel):
     orden_visita: int
     hora_estimada: Optional[datetime] = None
     hora_real_entrega: Optional[datetime] = None
+    latitud_entrega: Optional[float] = None
+    longitud_entrega: Optional[float] = None
     latitud: float = Field(ge=-90, le=90, allow_inf_nan=False)
     longitud: float = Field(ge=-180, le=180, allow_inf_nan=False)
     pedido: Optional[PedidoOut] = None

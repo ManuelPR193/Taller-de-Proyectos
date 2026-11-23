@@ -206,8 +206,11 @@ def confirm_delivery(payload: DeliveryConfirmationRequest, db: Session = Depends
     if not accessible(db.query(Ruta), user, db).filter(Ruta.ruta_id == detail.ruta_id).first():
         raise HTTPException(403, 'La entrega pertenece a otro conductor')
     if detail.hora_real_entrega is not None:
-        return {"message": "Entrega ya confirmada", "hora_entrega": detail.hora_real_entrega}
+        return {"message": "Entrega ya confirmada", "hora_entrega": detail.hora_real_entrega,
+                "latitud_entrega": detail.latitud_entrega, "longitud_entrega": detail.longitud_entrega}
     detail.hora_real_entrega = datetime.now()
+    detail.latitud_entrega = payload.latitud
+    detail.longitud_entrega = payload.longitud
     order = db.query(Pedido).filter(Pedido.pedido_id == detail.pedido_id).first()
     if order:
         order.estado = "ENTREGADO"
@@ -223,7 +226,8 @@ def confirm_delivery(payload: DeliveryConfirmationRequest, db: Session = Depends
             route.estado = "COMPLETADA"
 
     db.commit()
-    return {"message": "Entrega confirmada exitosamente (RN-010).", "hora_entrega": detail.hora_real_entrega}
+    return {"message": "Entrega confirmada exitosamente (RN-010).", "hora_entrega": detail.hora_real_entrega,
+            "latitud_entrega": detail.latitud_entrega, "longitud_entrega": detail.longitud_entrega}
 
 @router.post("/reoptimize-express")
 def insert_express_order(payload: ExpressOrderInsertRequest, db: Session = Depends(get_db)):

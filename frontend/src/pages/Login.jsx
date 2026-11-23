@@ -24,15 +24,15 @@ export const Login = () => {
     <section className="login-story" aria-label="EcoLogística Huancayo">
       <div className="brand-mark"><span className="brand-symbol">E</span><span>EcoLogística<br /><strong>Huancayo</strong></span></div>
       <div className="login-story-copy" data-enter>
-        <p className="eyebrow">CENTRO DE OPERACIONES · HUANCAYO</p>
-        <h1>La operación, en una sola vista.</h1>
-        <p>Planifica rutas, sigue entregas y consulta el impacto de cada recorrido con información de la operación.</p>
+        <p className="eyebrow">Centro de operaciones · Huancayo</p>
+        <h1>Optimizador de rutas para operadores.</h1>
+        <p>Planifica recorridos, organiza pedidos y confirma entregas en el Valle del Mantaro.</p>
       </div>
-      <div className="login-story-foot"><span>RUTAS</span><span>PEDIDOS</span><span>FLOTA</span></div>
+      <div className="login-story-foot"><span>Rutas</span><span>Pedidos</span><span>Flota</span></div>
     </section>
     <section className="login-access" aria-labelledby="access-title">
       <div className="login-form-wrap">
-        <p className="eyebrow">ACCESO A LA PLATAFORMA</p>
+        <p className="eyebrow">Acceso a la plataforma</p>
         <h2 id="access-title">{tab === 'login' ? 'Iniciar sesión' : 'Crear cuenta de cliente'}</h2>
         <p className="muted">{tab === 'login' ? 'Ingresa con tu cuenta para continuar.' : 'Consulta tus pedidos y entregas desde tu cuenta.'}</p>
         <div className="login-tabs" role="group" aria-label="Tipo de acceso">
@@ -46,7 +46,7 @@ export const Login = () => {
           {error && <p role="alert" className="form-error">{error}</p>}
           <button type="submit" className="btn-primary login-submit" disabled={busy}>{busy ? 'Procesando…' : tab === 'login' ? 'Ingresar a la plataforma →' : 'Crear cuenta e ingresar →'}</button>
         </form>
-        {demo && tab === 'login' && <div className="demo-access"><p>ACCESOS DE DESARROLLO</p><div>{[['Administrador', 'admin@distrirapido.pe', 'admin123'], ['Operador', 'operador@distrirapido.pe', 'operador123'], ['Conductor', 'conductor@distrirapido.pe', 'conductor123'], ['Auditor', 'auditor@distrirapido.pe', 'auditor123']].map(([role, mail, pass]) => <button key={role} type="button" onClick={() => { setEmail(mail); setPassword(pass); setError(''); }}>{role}</button>)}</div></div>}
+        {demo && tab === 'login' && <div className="demo-access"><p>Accesos de desarrollo</p><div>{[['Administrador', 'admin@distrirapido.pe', 'admin123'], ['Operador', 'operador@distrirapido.pe', 'operador123'], ['Conductor', 'conductor@distrirapido.pe', 'conductor123'], ['Auditor', 'auditor@distrirapido.pe', 'auditor123']].map(([role, mail, pass]) => <button key={role} type="button" onClick={() => { setEmail(mail); setPassword(pass); setError(''); }}>{role}</button>)}</div></div>}
       </div>
     </section>
   </main>;

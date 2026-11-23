@@ -9,12 +9,14 @@ from app.api.endpoints import auth, clients, dashboard, drivers, orders, reports
 from app.core.config import settings
 from app.core.security import require_write_user
 from app.db.security_migration import encrypt_legacy_driver_dni
+from app.db.delivery_gps_migration import add_delivery_gps_columns
 from app.db.session import Base, engine
 from app.db.spatial import install_spatial_index
 from app.services.road_network import RoadNetworkError
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
+add_delivery_gps_columns(engine)
 encrypt_legacy_driver_dni(engine)
 install_spatial_index(engine)
 

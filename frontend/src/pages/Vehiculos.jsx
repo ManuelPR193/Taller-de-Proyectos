@@ -84,7 +84,7 @@ export const Vehiculos = () => {
       <div className="glass-panel p-6 border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-white flex items-center gap-2.5">
-            <Truck className="w-6 h-6 text-blue-400" /> Gestión de Flota de Vehículos (RF-001)
+            <Truck className="w-6 h-6 text-emerald-300" /> Gestión de Flota de Vehículos (RF-001)
           </h2>
           <p className="text-slate-400 text-sm mt-1">
             Registro de unidades con factor de emisión de CO₂ y control automático de antigüedad (RN-002).
