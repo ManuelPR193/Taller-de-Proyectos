@@ -60,7 +60,7 @@ jobs:
       - name: Browser runtime
         working-directory: backend
         run: python -m playwright install --with-deps chromium
-      - name: Browser acceptance PT-01–PT-11
+      - name: Browser acceptance PT-01–PT-07, PT-10–PT-11
         shell: bash
         run: |
           cd backend
