@@ -57,7 +57,7 @@ La plataforma estima emisiones de CO₂ de rutas y ahorro frente a una base de c
 
 Para iniciar localmente: instalar `backend/requirements.txt`, ejecutar `backend/seed_data.py`, iniciar `uvicorn app.main:app` desde `backend/`, instalar con `npm ci` y ejecutar `npm run dev` desde `frontend/`. Se requiere Python 3.11 o superior y Node.js 22.12 o superior. Los datos de `seed_data.py` son solo para desarrollo y pruebas.
 
-En la validaci?n local del 23/11/2026: 54 pruebas de backend aprobaron con 90 % de cobertura, tres pruebas unitarias de frontend aprobaron y la compilaci?n Vite termin? correctamente. La suite Playwright ejecut? 27 casos en Chromium, Firefox y WebKit con la API local. La construcci?n Docker no pudo verificarse: Docker no resolvi? `auth.docker.io` por DNS, as? que no se comprob? una imagen ni un contenedor `healthy`. Los resultados y l?mites metodol?gicos se detallan en el [informe del Sprint 4](03%20Implementacion/Sprint%204/03%20Analisis%20PlayWrigth%20V_1_0_0.md).
+En la validación local del 23/11/2026: 54 pruebas de backend aprobaron con 90 % de cobertura, tres pruebas unitarias de frontend aprobaron y la compilación Vite terminó correctamente. La suite Playwright ejecutó 27 casos en Chromium, Firefox y WebKit con la API local. La construcción Docker no pudo verificarse: Docker no resolvió `auth.docker.io` por DNS, así que no se comprobó una imagen ni un contenedor `healthy`. Los resultados y límites metodológicos se detallan en el [informe del Sprint 4](03%20Implementacion/Sprint%204/03%20Analisis%20PlayWrigth%20V_1_0_0.md).
 
 ## 8. Entrega y pendientes verificables
 
