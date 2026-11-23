@@ -41,7 +41,7 @@ def login(page):
     page.locator('input[type="email"]').fill('admin@distrirapido.pe')
     page.locator('input[type="password"]').fill('admin123')
     page.locator('form').first.locator('button[type="submit"]').click()
-    page.wait_for_selector('main')
+    page.wait_for_selector('nav')
 
 
 def main():

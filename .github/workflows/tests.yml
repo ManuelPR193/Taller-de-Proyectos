@@ -81,16 +81,10 @@ jobs:
         working-directory: backend
         run: python tests/api_latency_probe.py
 
-      - name: Build and preview frontend for E2E
+      - name: Build frontend for E2E
         working-directory: frontend
         shell: bash
-        run: |
-          npm run build
-          npm run preview -- --port 5173 &
-          for i in {1..30}; do
-            curl -fsS http://127.0.0.1:5173 && break
-            sleep 1
-          done
+        run: npm run build
 
       - name: Execute Playwright E2E tests (Chromium, Firefox, WebKit)
         working-directory: frontend
